@@ -3,6 +3,7 @@
       {
         "fname":"Damien",
         "lname":"Wayne",
+        "nickname": "Dami",
         "gender":"m"
       }
    ],
