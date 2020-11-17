@@ -19,7 +19,7 @@ A simple personal assistant application for DIG5508: Final Project.
 - Requests & Recommendations
     - Have your assistant generate some new literary or lyrical ideas so you can finally squash that pesky Yeerk
     - Basically: Get some song/book recommendations
-- Games a Rainy Day:
+- Games for a Rainy Day:
     - Don't get too excited, it's probably just Hangman
 
 
