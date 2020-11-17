@@ -1,26 +1,27 @@
 # DIG5508: Final Project
-# Name: Alfred Pennyworth
+# Name: Personal Assistant App, Alfred
 # Time Spent: Rihanna-turning-hand.gif
-
-# Feature Planning
-"""
-    [ ] GUI interface [ ]
-    [x] Tells time
-    [x] Tells weather
-    [ ] Customize Assistant
-        [ ] Personality (Acrux (Posh), Montana (Sassy),Gallagher (Friendly))
-        [x] Change Voice (Based on machine's voices)
-
-"""
 
 #--------------------------------------------------------------------------
 
-# Table of Contents
+# Table of (Relative) Contents
 
 #--------------------------------------------------------------------------
 
 # 1.0 SETUP
-# 2.0 FUNCTIONS
+#       - Libraries / Addons
+#       - Classes / Objects
+# 2.0 FUNCTIONS (note: these are not by position, but by relationship and flow [[for my sanity]].)
+#       - startup: Begins program using the following functions
+#           + andNowTheWeather: Grabs weather from openweathermap API
+#           + timeIsAConstruct: Generates current date/time in specific format
+#       - changeAssistantMenu: Features all stuff below
+#           + changeVoice: Change assistant's voice
+#           + changeAssistName: Change assistant's name
+#           + changePersonality: Change assistant's personality (WIP)
+#           + updateSettings: Writes changes to settings.txt via JSON
+#       - Other Stuff:
+#           + badResponse: Called whenever user enters a bad value for input
 # 3.0 BUILDING GUI
 # 4.0 EXECUTION
 
@@ -37,8 +38,6 @@ from datetime import date, datetime
 from tkinter import *
 import requests
 import pyttsx3
-
-# INITIALIZE SOME THINGS
 
 engine = pyttsx3.init()
 voices = engine.getProperty('voices')
@@ -61,6 +60,10 @@ class Weather(object):
 # 2.0 FUNCTIONS
 
 #--------------------------------------------------------------------------
+
+def badResponse():
+    engine.say("That response doesn't work here.")
+    engine.runAndWait()
 
 def andNowTheWeather():
     # Get JSON from openweathermap.org and create an object using data
@@ -91,21 +94,23 @@ def butObeyWeMust():
 
     # AM
     currentHour = int(time[1])
+    timeGreeting = "default"
     if time[6] == "A":
         if currentHour <= 4 or currentHour == 12:
-            print("Happy Witching Hours")
-        elif currentHour > 4 and currentHour <= 11:
-            print("Good morning")
+            timeGreeting = "Happy Witching Hours"
+        elif currentHour >= 5 and currentHour <= 11:
+            timeGreeting = "Good Morning"
     # PM
     else:
         if currentHour == 12:
-            print("It's high noon")
+            timeGreeting = "A high noon to you"
         elif currentHour >= 1 and currentHour <=3:
-            print("Good afternoon")
+            timeGreeting = "Good Afternoon"
         elif currentHour == 4 and currentHour <=7:
-            print("Good evening")
+            timeGreeting = "Good Evening"
         elif currentHour >= 8 and currentHour <= 11:
-            print("Good night")
+            timeGreeting = "Late tidings"
+    return timeGreeting
 
 def grabSettings():
     # Sets values based on settings file on startup
@@ -140,6 +145,13 @@ def updateSettings(changedValue,newValue):
 
     # IF ASSISTANT'S NAME WAS CHANGED
     #pseudocode
+    if changedValue == "name":
+        with open('settings.txt') as json_file:
+            data = json.load(json_file)
+            data['assistant'][0]['name'] = newValue
+
+        with open('settings.txt', 'w') as json_file:
+            json_file.write(json.dumps(data,indent=4))
 
     # IF ASSISTANT'S HONORIFIC WAS CHANGED
     #pseudocode
@@ -160,31 +172,81 @@ def changeVoice():
     option = 0
     for voice in voices: 
         #print("ID: %s" %voice.id)
-        print(option, voice.name)
+        print(str(option)+". "+ voice.name)
         option += 1
     engine.say("These are the current voices on your machine:")
     engine.runAndWait()
 
     # CHECK: change voice
-    engine.say("Would you like to change the voice?")
+    engine.say("Would you like to swap for one?")
     engine.runAndWait()
-    userinput = input("Would you like to change the voice? [y/n]")
+    userinput = input("Would you like to swap for one? [y/n]")
     if userinput == "y":
-        engine.say("Very well. Which voice would you like to use?")
-        engine.runAndWait()
-        userinput = int(input("Please enter the corresponding number."))
-        voice_id = voices[userinput].id
-        engine.setProperty('voice', voice_id)
-        engine.say("Voice setting changed.")
-
+        # keep looping through test until user selects voice
+        # reset variables to use as bools, in a sense
+        userinput = 0
+        newVoice = 0
+        while userinput != "y":
+            engine.say("Very well. Which voice would you like?")
+            engine.runAndWait()
+            # Grab user input and test voice
+            newVoice = int(input("Which voice would you like?"))
+            voice_id = voices[newVoice].id
+            engine.setProperty('voice', voice_id)
+            engine.say("This is how it sounds, is that alright?")
+            engine.runAndWait()
+            userinput = input("This is how it sounds, is that alright?[y/n]")
+        
+        # update settings
         changedValue = "voice"
-        newValue = voices[userinput].id
+        newValue = voices[newVoice].id
         updateSettings(changedValue,newValue)
     elif userinput == "n":
         engine.say("Very well, the voice will remain the same.")
+        engine.runAndWait()
     else:
-        engine.say("That response doesn't work here.")
+        badResponse()
+
+def changeAssistName():
+    engine.say("What would you like to call me?")
     engine.runAndWait()
+    assistName = 0
+    userinput = 0
+    # Until a proper string is entered, ask for input
+    while isinstance(assistName, str) == False:
+        assistName = input("What would like to call me?")
+
+    while userinput != "y":
+        engine.say("You've entered "+assistName+". Is that correct?")
+        engine.runAndWait()
+        userinput = input("You've entered "+assistName+". Is that correct? [y/n]")
+        if userinput == "n":
+            engine.say("I must have misheard. What would you prefer?")
+            engine.runAndWait()
+            assistName = input("I must have misheard. What would you prefer?")
+
+    # set new details and send to updateSettings
+    engine.say(assistName+" it is.")
+    engine.runAndWait()
+    changedValue = "name"
+    newValue = assistName
+    updateSettings(changedValue,newValue)
+
+def changeAssistantMenu():
+    engine.say("Here are your options. What would you like to change?")
+    engine.runAndWait()
+    userinput = int(input("""
+        0. Rename Assistant
+        1. Change Personality
+        2. Change Assistant Voice
+    """))
+
+    if userinput == 0:
+        changeAssistName()
+    elif userinput == 1:
+        print("change personality")
+    elif userinput == 2:
+        changeVoice()
 
 def startup():
     # Initialize settings
@@ -194,11 +256,15 @@ def startup():
     #temp,desc = andNowTheWeather()
 
     # Assistant greets User
-    engine.say("Happy Witching Hours " +theUser.fname)
+    greeting = butObeyWeMust()
+    engine.say(greeting+" "+theUser.fname)
     engine.runAndWait()
     # Assistant discusses the weather
     # engine.say("It is currently " +str(temp) + "degrees in North Orlando.")
     #engine.runAndWait()
+
+def mainInterface():
+    print("wow")
 
 #--------------------------------------------------------------------------
 
@@ -225,3 +291,4 @@ def startup():
 #--------------------------------------------------------------------------
 
 #startup()
+#mainInterface()
