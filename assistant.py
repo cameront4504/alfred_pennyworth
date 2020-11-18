@@ -94,7 +94,7 @@ def andNowTheWeather():
     # Get JSON from openweathermap.org and create an object using data
     # Formatted as: Temp, Description
 
-    weatherRequest = requests.get("http://api.openweathermap.org/data/2.5/weather?q=Orlando&units=imperial&appid=ITISAMYSTERY")
+    weatherRequest = requests.get("http://api.openweathermap.org/data/2.5/weather?q=Orlando&units=imperial&appid=944d36db5865dfe678be92ab8f209646")
     data = weatherRequest.json()
     temp = data['main']['feels_like']
     desc = data['weather'][0]['description']
