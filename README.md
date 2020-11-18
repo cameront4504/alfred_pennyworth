@@ -21,5 +21,6 @@ A simple personal assistant application for DIG5508: Final Project.
     - Basically: Get some song/book recommendations
 - Games for a Rainy Day:
     - Don't get too excited, it's probably just Hangman
+- And m o r e
 
 

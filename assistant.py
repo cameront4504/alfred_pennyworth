@@ -2,6 +2,21 @@
 # Name: Personal Assistant App, Alfred
 # Time Spent: Rihanna-turning-hand.gif
 
+# TO DO LIST
+"""
+
+        - Streamline code
+            + Maybe certain functions, like change name / change assist name could be combined?
+            + Instead, dialogue and variables would change depending on what or who is being changed
+            + Similarly, have all changes to settings.txt run through updateSettings
+                - Use parameters to change what sections are affected
+        - Things to Streamline:
+            + 
+            +
+            +
+
+"""
+
 #--------------------------------------------------------------------------
 
 # Table of (Relative) Contents
@@ -19,7 +34,7 @@
 #           + changeVoice: Change assistant's voice
 #           + changeAssistName: Change assistant's name
 #           + changePersonality: Change assistant's personality (WIP)
-#           + updateSettings: Writes changes to settings.txt via JSON
+#       - updateSettings: Writes changes to settings.txt via JSON
 #       - Other Stuff:
 #           + badResponse: Called whenever user enters a bad value for input
 # 3.0 BUILDING GUI
@@ -45,10 +60,10 @@ voices = engine.getProperty('voices')
 # MAKE SOME CLASSES
 
 class User(object):
-    def __init__(self, fname, lname, nickname, gender):
+    def __init__(self, fname, lname, nickname, honor):
         self.fname = fname
         self.lname = lname
-        self.gender = gender
+        self.honor = honor
 
 class Weather(object):
     def __init__(self,temp,desc):
@@ -91,7 +106,6 @@ def butObeyWeMust():
 
     # CHECK: Is time AM or PM? Then, decide what time of day.
     # This is the epitome of creator bias.
-
     # AM
     currentHour = int(time[1])
     timeGreeting = "default"
@@ -101,12 +115,12 @@ def butObeyWeMust():
         elif currentHour >= 5 and currentHour <= 11:
             timeGreeting = "Good Morning"
     # PM
-    else:
+    elif time[6] == "P":
         if currentHour == 12:
             timeGreeting = "A high noon to you"
         elif currentHour >= 1 and currentHour <=3:
             timeGreeting = "Good Afternoon"
-        elif currentHour == 4 and currentHour <=7:
+        elif currentHour >= 4 and currentHour <=7:
             timeGreeting = "Good Evening"
         elif currentHour >= 8 and currentHour <= 11:
             timeGreeting = "Late tidings"
@@ -123,19 +137,17 @@ def grabSettings():
             fname = d['fname']
             lname = d['lname']
             nickname = d['nickname']
-            gender = d['gender']
+            honor = d['honor']
         for d in data['assistant']:
             voice = d['id']
             a_name = d['name']
-            a_honor = d['honor']
     # Set voice from settings
     engine.setProperty('voice', voice)
     # return values for use
-    return fname, lname, nickname, gender
+    return fname, lname, nickname, honor
 
-def updateSettings(changedValue,newValue):
+def updateSettings(updateWho,changedValue,newValue):
     # Handles all changes to the assistant
-    # Called several times throughout program
 
     # CHECK: see what value was changed
     # That way only certain parts of JSON file are edited
@@ -148,7 +160,10 @@ def updateSettings(changedValue,newValue):
     if changedValue == "name":
         with open('settings.txt') as json_file:
             data = json.load(json_file)
-            data['assistant'][0]['name'] = newValue
+            if updateWho == "user":
+                data['user'][0]['fname'] = newValue
+            else:
+                data['assistant'][0]['name'] = newValue
 
         with open('settings.txt', 'w') as json_file:
             json_file.write(json.dumps(data,indent=4))
@@ -198,9 +213,13 @@ def changeVoice():
             userinput = input("This is how it sounds, is that alright?[y/n]")
         
         # update settings
+        engine.say("Voice confirmed.")
+        engine.runAndWait()
+        updateWho = "assistant"
         changedValue = "voice"
         newValue = voices[newVoice].id
-        updateSettings(changedValue,newValue)
+        updateSettings(updateWho,changedValue,newValue)
+        
     elif userinput == "n":
         engine.say("Very well, the voice will remain the same.")
         engine.runAndWait()
@@ -228,9 +247,10 @@ def changeAssistName():
     # set new details and send to updateSettings
     engine.say(assistName+" it is.")
     engine.runAndWait()
+    updateWho = "assistant"
     changedValue = "name"
     newValue = assistName
-    updateSettings(changedValue,newValue)
+    updateSettings(updateWho,changedValue,newValue)
 
 def changeAssistantMenu():
     engine.say("Here are your options. What would you like to change?")
@@ -248,23 +268,83 @@ def changeAssistantMenu():
     elif userinput == 2:
         changeVoice()
 
+def changePersonalName():
+    engine.say("What would you prefer to be called?")
+    engine.runAndWait()
+    newName = 0
+    userinput = 0
+    # Until a proper string is entered, ask for input
+    while isinstance(newName, str) == False:
+        newName = input("What would you prefer to be called?")
+
+    while userinput != "y":
+        engine.say("You've entered "+newName+". Is that correct?")
+        engine.runAndWait()
+        userinput = input("You've entered "+newName+". Is that correct? [y/n]")
+        if userinput == "n":
+            engine.say("I must have misheard. What would you prefer?")
+            engine.runAndWait()
+            newName = input("I must have misheard. What would you prefer?")
+
+    # set new details and send to updatePersonalSettings
+    engine.say(newName+" it is.")
+    engine.runAndWait()
+    updateWho = "user"
+    changedValue = "name"
+    newValue = newName
+    updateSettings(updateWho,changedValue,newValue)
+
+def changePersonalMenu():
+    engine.say("Here are your options. What would you like to change?")
+    engine.runAndWait()
+    userinput = int(input("""
+        0. Change Name
+        1. Change Nickname
+        2. Change Honorific
+    """))
+
+    if userinput == 0:
+        changePersonalName()
+    elif userinput == 1:
+        print("change nickname")
+    elif userinput == 2:
+        print("change honorific")
+
 def startup():
     # Initialize settings
-    fname,lname,nickname,gender = grabSettings()
-    theUser = User(fname,lname,nickname,gender)
+    fname,lname,nickname,honor = grabSettings()
+    theUser = User(fname,lname,nickname,honor)
     # Grab Weather NEED TO UNCOMMENT TO USE
-    #temp,desc = andNowTheWeather()
+    # UNCOMMENT AT LAUNCH temp,desc = andNowTheWeather()
 
     # Assistant greets User
     greeting = butObeyWeMust()
     engine.say(greeting+" "+theUser.fname)
     engine.runAndWait()
     # Assistant discusses the weather
-    # engine.say("It is currently " +str(temp) + "degrees in North Orlando.")
-    #engine.runAndWait()
+    #UNCOMMENT AT LAUNCH engine.say("It is currently " +str(temp) + "degrees in North Orlando.")
+    engine.runAndWait()
+    return theUser
 
 def mainInterface():
-    print("wow")
+    # Main menu that launches after startup
+    # Links to all other functions/menus/etc
+    engine.say("What can I help you with?")
+    engine.runAndWait()
+
+    userinput = int(input("""
+        0. option
+        0. option
+        0. Manage Personal Settings
+        2. Manage Assistant Settings
+    """))
+
+    if userinput == 0:
+        print("0")
+    elif userinput == 1:
+        print("1")
+    elif userinput == 2:
+        changeAssistantMenu()
 
 #--------------------------------------------------------------------------
 
