@@ -2,21 +2,24 @@
 # Name: Personal Assistant App, Alfred
 # Time Spent: Rihanna-turning-hand.gif
 
-# TO DO LIST
 """
+# TO DO LIST
 
-        - Streamline Thoughts
-            + Maybe certain functions, like change name / change assist name could be combined?
-            + Instead, dialogue and variables would change depending on what or who is being changed
-            + Similarly, have all changes to settings.txt run through updateSettings
-                - Use parameters to change what sections are affected
-        - Things to Streamline:
-            + JSON reading and writing? [x]
-            +
-            +
-        - Remembrance:
-            + Has user already interacted with assistant. If so, change some lines like
-            + "What nickname would you like?" would be "What would you like to change your nickname to?"
+        - Features:
+            [ ] Bullet Journal
+                    - Scheduling
+                    - Habits
+                    - Budgeting
+            [ ] Recommendations
+                    - By Genre
+                    - By Mood
+            [ ] Games & Entertainment
+            [ ] Assistant Remembering User if interacted before
+            [x] Settings JSON
+            [x] Change Settings Functions
+        - Cleanup / Streamlining
+            [x] JSON reading and writing?
+            [ ] User Input (A lot of repeat stuff rn)
 
 """
 
@@ -31,7 +34,7 @@
 # 1.0 SETUP
 #       - Libraries / Addons
 #       - Classes / Objects
-# 2.0 FUNCTIONS
+# 2.0 FUNCTIONS (relation-ship based)
 #       - startup: Begins program using the following functions
 #           + andNowTheWeather: Grabs weather from openweathermap API
 #           + timeIsAConstruct: Generates current date/time in specific format
@@ -79,11 +82,6 @@ class Assistant(object):
     def __init__(self,name,status):
         self.name = name
         self.status = status
-
-class Weather(object):
-    def __init__(self,temp,desc):
-        self.temp = temp
-        self.desc = desc
 
 #--------------------------------------------------------------------------
 
