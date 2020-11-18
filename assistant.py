@@ -26,6 +26,8 @@
 
 #--------------------------------------------------------------------------
 
+# WIP functions have the string of ++++
+
 # 1.0 SETUP
 #       - Libraries / Addons
 #       - Classes / Objects
@@ -33,15 +35,16 @@
 #       - startup: Begins program using the following functions
 #           + andNowTheWeather: Grabs weather from openweathermap API
 #           + timeIsAConstruct: Generates current date/time in specific format
+#           + butObeyWeMust: Uses date/time data to change program greeting
 #       - changeAssistantMenu: Features all stuff below
 #           + changeVoice: Change assistant's voice
 #           + changeAssistName: Change assistant's name
-#           + changePersonality: Change assistant's personality (WIP)
+#           + changePersonality: Change assistant's personality +++++++++++++++++++++++++++++++++++++++++
 #       - changePersonalMenu: Features all stuff below; update user information
 #           + changeName: Self explanatory
 #           + changeNickname: Self explanatory
-#           + changeHonor: Change term of addressment (Sir, Ma'am, Serah, Madam, etc.)
-#       - updateSettings: Writes changes to settings.txt via JSON
+#           + changeHonor: Change term of addressment (Sir, Ma'am, Serah, Madam, etc.) +++++++++++++++++++++++++++++++++++++++++
+#       - updateSettings: Writes any changes to settings.txt via JSON
 #       - Other Stuff:
 #           + badResponse: Called whenever user enters a bad value for input
 # 3.0 BUILDING GUI
@@ -91,7 +94,7 @@ def andNowTheWeather():
     # Get JSON from openweathermap.org and create an object using data
     # Formatted as: Temp, Description
 
-    weatherRequest = requests.get("http://api.openweathermap.org/data/2.5/weather?q=Orlando&units=imperial&appid=944d36db5865dfe678be92ab8f209646")
+    weatherRequest = requests.get("http://api.openweathermap.org/data/2.5/weather?q=Orlando&units=imperial&appid=ITISAMYSTERY")
     data = weatherRequest.json()
     temp = data['main']['feels_like']
     desc = data['weather'][0]['description']
@@ -150,7 +153,7 @@ def grabSettings():
             a_name = d['name']
     # Set voice from settings
     engine.setProperty('voice', voice)
-    # return values for use
+    # return values for user class
     return fname, lname, nickname, honor
 
 def updateSettings(updateWho,changedValue,newValue):
@@ -332,9 +335,6 @@ def changePersonalMenu():
         print("change honorific")
 
 def startup():
-    # Initialize settings
-    fname,lname,nickname,honor = grabSettings()
-    theUser = User(fname,lname,nickname,honor)
     # Grab Weather NEED TO UNCOMMENT TO USE
     # UNCOMMENT AT LAUNCH temp,desc = andNowTheWeather()
 
@@ -390,5 +390,10 @@ def mainInterface():
 
 #--------------------------------------------------------------------------
 
-#startup()
+# Startup
+fname,lname,nickname,honor = grabSettings()
+theUser = User(fname,lname,nickname,honor)
+startup()
+
+# Main Menu
 #mainInterface()
