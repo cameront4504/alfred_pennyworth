@@ -3,7 +3,7 @@
         {
             "fname": "Damien",
             "lname": "Wayne",
-            "nickname": "Dami",
+            "nickname": "Daymi",
             "honor": "Serah"
         }
     ],

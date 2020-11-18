@@ -5,15 +5,18 @@
 # TO DO LIST
 """
 
-        - Streamline code
+        - Streamline Thoughts
             + Maybe certain functions, like change name / change assist name could be combined?
             + Instead, dialogue and variables would change depending on what or who is being changed
             + Similarly, have all changes to settings.txt run through updateSettings
                 - Use parameters to change what sections are affected
         - Things to Streamline:
-            + 
+            + JSON reading and writing? [x]
             +
             +
+        - Remembrance:
+            + Has user already interacted with assistant. If so, change some lines like
+            + "What nickname would you like?" would be "What would you like to change your nickname to?"
 
 """
 
@@ -34,6 +37,10 @@
 #           + changeVoice: Change assistant's voice
 #           + changeAssistName: Change assistant's name
 #           + changePersonality: Change assistant's personality (WIP)
+#       - changePersonalMenu: Features all stuff below; update user information
+#           + changeName: Self explanatory
+#           + changeNickname: Self explanatory
+#           + changeHonor: Change term of addressment (Sir, Ma'am, Serah, Madam, etc.)
 #       - updateSettings: Writes changes to settings.txt via JSON
 #       - Other Stuff:
 #           + badResponse: Called whenever user enters a bad value for input
@@ -148,37 +155,29 @@ def grabSettings():
 
 def updateSettings(updateWho,changedValue,newValue):
     # Handles all changes to the assistant
+    # First, open settings.txt and create a data from the readings
+    with open('settings.txt') as json_file:
+        data = json.load(json_file)
 
-    # CHECK: see what value was changed
-    # That way only certain parts of JSON file are edited
-
-    # IF USER'S NAME WAS CHANGED
-    #pseudocode
-
-    # IF ASSISTANT'S NAME WAS CHANGED
-    #pseudocode
-    if changedValue == "name":
-        with open('settings.txt') as json_file:
-            data = json.load(json_file)
+        # IF A NAME WAS UPDATED
+        if changedValue == "name":
             if updateWho == "user":
                 data['user'][0]['fname'] = newValue
             else:
                 data['assistant'][0]['name'] = newValue
+    
+        # IF NICKNAME WAS ADDED
+        if changedValue == "nickname":
+            data['user'][0]['nickname'] = newValue
 
-        with open('settings.txt', 'w') as json_file:
-            json_file.write(json.dumps(data,indent=4))
+        # IF ASSISTANT VOICE WAS UPDATED
+        if changedValue == "voice":
+            with open('settings.txt') as json_file:
+                data = json.load(json_file)
+                data['assistant'][0]['id'] = newValue
 
-    # IF ASSISTANT'S HONORIFIC WAS CHANGED
-    #pseudocode
-
-    # If ASSISTANT'S VOICE WAS CHANGED
-    # Update the voice id in the JSON file with the new value
-    if changedValue == "voice":
-        with open('settings.txt') as json_file:
-            data = json.load(json_file)
-            data['assistant'][0]['id'] = newValue
-
-        with open('settings.txt', 'w') as json_file:
+    # WRITE TO SETTINGS.TXT     
+    with open('settings.txt', 'w') as json_file:
             json_file.write(json.dumps(data,indent=4))
 
 def changeVoice():
@@ -286,28 +285,50 @@ def changePersonalName():
             engine.runAndWait()
             newName = input("I must have misheard. What would you prefer?")
 
-    # set new details and send to updatePersonalSettings
-    engine.say(newName+" it is.")
-    engine.runAndWait()
+    # set new details and send to updateSettings
     updateWho = "user"
     changedValue = "name"
     newValue = newName
     updateSettings(updateWho,changedValue,newValue)
 
+    # ask if user wants a nickname
+    engine.say(newName+" it is. Would you like to have a nickname?")
+    engine.runAndWait()
+    nickname = 0
+    userinput = input("Would you like to have a nickname?")
+    if userinput == "y":
+        engine.say("What nickname would you like?")
+        engine.runAndWait()
+        while isinstance(nickname, str) == False:
+            nickname = input("What nickname would you like?")
+
+        userinput = 0
+        while userinput != "y":
+            engine.say("You've entered "+nickname+". Is that correct?")
+            engine.runAndWait()
+            userinput = input("You've entered "+nickname+". Is that correct? [y/n]")
+            if userinput == "n":
+                engine.say("I must have misheard. What would you prefer?")
+                engine.runAndWait()
+                nickname = input("I must have misheard. What would you prefer?")
+
+        # If nickname, send to updateSettings
+        updateWho = "user"
+        changedValue = "nickname"
+        newValue = nickname
+        updateSettings(updateWho,changedValue,newValue)
+
 def changePersonalMenu():
     engine.say("Here are your options. What would you like to change?")
     engine.runAndWait()
     userinput = int(input("""
-        0. Change Name
-        1. Change Nickname
-        2. Change Honorific
+        0. Change Name And/Or Nickname
+        1. Change Honorific
     """))
 
     if userinput == 0:
         changePersonalName()
     elif userinput == 1:
-        print("change nickname")
-    elif userinput == 2:
         print("change honorific")
 
 def startup():
@@ -324,7 +345,6 @@ def startup():
     # Assistant discusses the weather
     #UNCOMMENT AT LAUNCH engine.say("It is currently " +str(temp) + "degrees in North Orlando.")
     engine.runAndWait()
-    return theUser
 
 def mainInterface():
     # Main menu that launches after startup
