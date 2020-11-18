@@ -31,7 +31,7 @@
 # 1.0 SETUP
 #       - Libraries / Addons
 #       - Classes / Objects
-# 2.0 FUNCTIONS (note: these are not by position, but by relationship and flow [[for my sanity]].)
+# 2.0 FUNCTIONS
 #       - startup: Begins program using the following functions
 #           + andNowTheWeather: Grabs weather from openweathermap API
 #           + timeIsAConstruct: Generates current date/time in specific format
@@ -70,10 +70,15 @@ voices = engine.getProperty('voices')
 # MAKE SOME CLASSES
 
 class User(object):
-    def __init__(self, fname, lname, nickname, honor):
+    def __init__(self, fname, lname, nickname):
         self.fname = fname
         self.lname = lname
-        self.honor = honor
+        self.nickname = nickname
+
+class Assistant(object):
+    def __init__(self,name,status):
+        self.name = name
+        self.status = status
 
 class Weather(object):
     def __init__(self,temp,desc):
@@ -83,8 +88,14 @@ class Weather(object):
 #--------------------------------------------------------------------------
 
 # 2.0 FUNCTIONS
+#       - 2.1: Housekeeping & JSON
+#       - 2.2: Changes to Assistant
+#       - 2.3: Changes to User
+#       - 2.4: Startup & Main Interface
 
 #--------------------------------------------------------------------------
+
+# 2.1 Startup & Housekeeping
 
 def badResponse():
     engine.say("That response doesn't work here.")
@@ -147,14 +158,14 @@ def grabSettings():
             fname = d['fname']
             lname = d['lname']
             nickname = d['nickname']
-            honor = d['honor']
         for d in data['assistant']:
             voice = d['id']
             a_name = d['name']
+            a_bool = d['hasMetUser']
     # Set voice from settings
     engine.setProperty('voice', voice)
     # return values for user class
-    return fname, lname, nickname, honor
+    return fname, lname, nickname, a_name, a_bool
 
 def updateSettings(updateWho,changedValue,newValue):
     # Handles all changes to the assistant
@@ -183,12 +194,13 @@ def updateSettings(updateWho,changedValue,newValue):
     with open('settings.txt', 'w') as json_file:
             json_file.write(json.dumps(data,indent=4))
 
+# 2.2: Changes to Assistant
+
 def changeVoice():
     # List current voices on machine
     # Preprend number for user to select, if they decide to change it
     option = 0
-    for voice in voices: 
-        #print("ID: %s" %voice.id)
+    for voice in voices:
         print(str(option)+". "+ voice.name)
         option += 1
     engine.say("These are the current voices on your machine:")
@@ -228,8 +240,8 @@ def changeVoice():
     else:
         badResponse()
 
-def changeAssistName():
-    engine.say("What would you like to call me?")
+def changeAssistName(assist):
+    engine.say("I'm currently called " + assist.name+ ". What would you like to call me?")
     engine.runAndWait()
     assistName = 0
     userinput = 0
@@ -254,23 +266,22 @@ def changeAssistName():
     newValue = assistName
     updateSettings(updateWho,changedValue,newValue)
 
-def changeAssistantMenu():
+def changeAssistantMenu(assist):
     engine.say("Here are your options. What would you like to change?")
     engine.runAndWait()
     userinput = int(input("""
         0. Rename Assistant
-        1. Change Personality
-        2. Change Assistant Voice
+        1. Change Assistant Voice
     """))
 
     if userinput == 0:
-        changeAssistName()
+        changeAssistName(assist)
     elif userinput == 1:
-        print("change personality")
-    elif userinput == 2:
         changeVoice()
 
-def changePersonalName():
+# 2.3: Changes to User
+
+def changePersonalName(user):
     engine.say("What would you prefer to be called?")
     engine.runAndWait()
     newName = 0
@@ -314,39 +325,42 @@ def changePersonalName():
                 engine.say("I must have misheard. What would you prefer?")
                 engine.runAndWait()
                 nickname = input("I must have misheard. What would you prefer?")
+    else:
+        nickname = user.fname
+    # If nickname, send to updateSettings
+    updateWho = "user"
+    changedValue = "nickname"
+    newValue = nickname
+    updateSettings(updateWho,changedValue,newValue)
 
-        # If nickname, send to updateSettings
-        updateWho = "user"
-        changedValue = "nickname"
-        newValue = nickname
-        updateSettings(updateWho,changedValue,newValue)
-
-def changePersonalMenu():
+def changePersonalMenu(user):
     engine.say("Here are your options. What would you like to change?")
     engine.runAndWait()
     userinput = int(input("""
         0. Change Name And/Or Nickname
-        1. Change Honorific
+        1. ???? I don't know yet
     """))
 
     if userinput == 0:
-        changePersonalName()
+        changePersonalName(user)
     elif userinput == 1:
-        print("change honorific")
+        print("something")
 
-def startup():
+# 2.4 Startup & Main Interface
+
+def startup(user):
     # Grab Weather NEED TO UNCOMMENT TO USE
     # UNCOMMENT AT LAUNCH temp,desc = andNowTheWeather()
 
     # Assistant greets User
     greeting = butObeyWeMust()
-    engine.say(greeting+" "+theUser.fname)
+    engine.say(greeting+" "+user.fname)
     engine.runAndWait()
     # Assistant discusses the weather
     #UNCOMMENT AT LAUNCH engine.say("It is currently " +str(temp) + "degrees in North Orlando.")
     engine.runAndWait()
 
-def mainInterface():
+def mainInterface(user,assist):
     # Main menu that launches after startup
     # Links to all other functions/menus/etc
     engine.say("What can I help you with?")
@@ -355,16 +369,16 @@ def mainInterface():
     userinput = int(input("""
         0. option
         0. option
-        0. Manage Personal Settings
+        1. Manage Personal Settings
         2. Manage Assistant Settings
     """))
 
     if userinput == 0:
         print("0")
     elif userinput == 1:
-        print("1")
+        changePersonalMenu(user)
     elif userinput == 2:
-        changeAssistantMenu()
+        changeAssistantMenu(assist)
 
 #--------------------------------------------------------------------------
 
@@ -391,9 +405,21 @@ def mainInterface():
 #--------------------------------------------------------------------------
 
 # Startup
-fname,lname,nickname,honor = grabSettings()
-theUser = User(fname,lname,nickname,honor)
-startup()
+
+# Grab settings
+fname, lname, nickname, a_name, a_bool = grabSettings()
+
+# if User is using program for first time, run enchantee
+# Aka run through questions to get values for settings.txt
+# if a_bool == false:
+    #enchantee() WIP
+
+# Create objects from classes
+theUser = User(fname,lname,nickname)
+theAssistant = Assistant(a_name, a_bool)
+
+# Initialize
+startup(theUser)
 
 # Main Menu
-#mainInterface()
+mainInterface(theUser,theAssistant)
