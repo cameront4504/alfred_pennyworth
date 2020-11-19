@@ -13,8 +13,10 @@
             [ ] Recommendations
                     - By Genre
                     - By Mood
+            [x] Research
+                    - wikipeida lookup
             [ ] Games & Entertainment
-            [ ] Assistant Remembering User if interacted before
+            [x] Assistant Remembering User if interacted before
             [x] Settings JSON
             [x] Change Settings Functions
         - Cleanup / Streamlining
@@ -43,7 +45,7 @@
 #           + recordKeeping +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ WIP
 #           + research: Lets user look up stuff via wikipedia library
 #       - changeAssistantMenu: Features all stuff below
-#           + changeVoice: Change assistant's voice
+#           + changeAssistVoice: Change assistant's voice
 #           + changeAssistName: Change assistant's name
 #           + changePersonality: Change assistant's personality +++++++++++++++++++++++++++++++++++++++++ WIP
 #       - changePersonalMenu: Features all stuff below; update user information
@@ -173,6 +175,10 @@ def updateSettings(updateWho,changedValue,newValue):
     with open('settings.txt') as json_file:
         data = json.load(json_file)
 
+        # IF FIRST TIME USER
+        if changedValue == "status":
+            data['assistant'][0]['hasMetUser'] = newValue
+
         # IF A NAME WAS UPDATED
         if changedValue == "name":
             if updateWho == "user":
@@ -194,7 +200,7 @@ def updateSettings(updateWho,changedValue,newValue):
     with open('settings.txt', 'w') as json_file:
             json_file.write(json.dumps(data,indent=4))
 
-def changeVoice():
+def changeAssistVoice():
     # List current voices on machine
     # Preprend number for user to select, if they decide to change it
     option = 0
@@ -275,7 +281,7 @@ def changeAssistantMenu(assist):
     if userinput == 0:
         changeAssistName(assist)
     elif userinput == 1:
-        changeVoice()
+        changeAssistVoice()
 
 def changePersonalName(user):
     engine.say("What would you prefer to be called?")
@@ -338,18 +344,12 @@ def changePersonalMenu(user):
     """))
 
     if userinput == 0:
-        changePersonalName(user)
+        changePersonalName()
     elif userinput == 1:
         print("something")
 
 def recordKeeping():
     print("recordkeeping menu")
-
-    # bullet journal stuff:
-    #   - read today's date
-    #   - create new habit
-    #   - add entry for habit
-    #   - view all entries for habit to date
 
 def research():
     engine.say("what would you like to research?")
@@ -360,22 +360,44 @@ def research():
     engine.say("According to Wikipedia: "+wikipedia.summary(topic, sentences=2))
     engine.runAndWait()
 
-    engine.say("Does that answer your questions?")
+    engine.say("Does that answer your questions? Otherwise, here are some other options.")
+    engine.runAndWait()
+    userinput = -1
+    userinput = input("""Does that answer your questions? Otherwise, here are some other options.
+        0. Open Page in Browser
+        1. Lookup Something Else
+        2. Finish Research""")
+
+    if userinput == 0:
+        url = "https://en.wikipedia.org/wiki/"+topic
+        webbrowser.open(url, new=2)
+    elif userinput == 1:
+        research()
+
+def enchantee(user,assist):
+    print("enchantee")
+    engine.say("Hello. Welcome to ALFRED, a personal assistant application. To begin, let's set up your user configuration.")
     engine.runAndWait()
 
-    # BUG DISCOVERED: Why does it skip straight to else here
-    userinput = 0
-    userinput = ("Does that answer your questions? [y/n]")
-    if userinput == "y":
-        engine.say("Happy to help!")
-        engine.runAndWait()
-    else:
-        engine.say("Would you like to try looking up something else?")
-        engine.runAndWait()
-        userinput = 0
-        userinput = input("Would you like to try looking up something else?[y/n]")
-        if userinput =="y":
-            research()
+    changePersonalName(user)
+
+    engine.say("Now, let's set up a profile for your assistant.")
+    engine.runAndWait()
+
+    changeAssistVoice()
+
+    engine.say("What about a name?")
+    engine.runAndWait()
+
+    changeAssistName(assist)
+
+    engine.say("I'm pleased to meet you "+user.name)
+    engine.runAndWait()
+
+    updateWho = "assistant"
+    changedValue = "status"
+    newValue = "True"
+    updateSettings(updateWho,changedValue,newValue)
 
 def startup(user):
     # Grab Weather NEED TO UNCOMMENT TO USE
@@ -399,7 +421,7 @@ def mainMenu(user,assist):
     userinput = int(input("""
         0. Recordkeeping
         1. Recommendations
-        2. Research & Retrieval
+        2. Research & Information
         3. Manage Personal Settings
         4. Manage Assistant Settings
     """))
@@ -447,17 +469,14 @@ def mainMenu(user,assist):
 # Grab settings
 name, nickname, a_name, a_bool = grabSettings()
 
-# if User is using program for first time, run enchantee
-# Aka run through questions to get values for settings.txt
-# if a_bool == false:
-    #enchantee() WIP
-
 # Create objects from classes
 theUser = User(name,nickname)
 theAssistant = Assistant(a_name, a_bool)
 
-# Initialize
-startup(theUser)
+# check if first-time user
+if a_bool == "False":
+    enchantee(theUser,theAssistant)
+else:
+    startup(theUser)
 
-# Main Menu
-mainMenu(theUser,theAssistant)
+#mainMenu(theUser,theAssistant)
