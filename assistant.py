@@ -41,6 +41,7 @@
 #           + butObeyWeMust: Uses date/time data to change program greeting
 #       - mainMenu: Main menu of sorts, grants access to app's primary functions
 #           + recordKeeping +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ WIP
+#           + research: Lets user look up stuff via wikipedia library
 #       - changeAssistantMenu: Features all stuff below
 #           + changeVoice: Change assistant's voice
 #           + changeAssistName: Change assistant's name
@@ -62,10 +63,17 @@
 
 # LIBRARIES AND ADDONS
 
+# The Basics
 import json
 from datetime import date, datetime
-from tkinter import *
+
+# API and Web browser related
 import requests
+import wikipedia    # example: wikipedia.summary("Albert Einstein", sentences=2)
+import webbrowser   # example: webbrowser.open('urlgoeshere', new=2)
+
+# Assistant-Related
+#from tkinter import *
 import pyttsx3
 
 engine = pyttsx3.init()
@@ -343,16 +351,42 @@ def recordKeeping():
     #   - add entry for habit
     #   - view all entries for habit to date
 
+def research():
+    engine.say("what would you like to research?")
+    engine.runAndWait()
+
+    topic = input ("What would you like to research?")
+    print(wikipedia.summary(topic, sentences=2))
+    engine.say("According to Wikipedia: "+wikipedia.summary(topic, sentences=2))
+    engine.runAndWait()
+
+    engine.say("Does that answer your questions?")
+    engine.runAndWait()
+
+    # BUG DISCOVERED: Why does it skip straight to else here
+    userinput = 0
+    userinput = ("Does that answer your questions? [y/n]")
+    if userinput == "y":
+        engine.say("Happy to help!")
+        engine.runAndWait()
+    else:
+        engine.say("Would you like to try looking up something else?")
+        engine.runAndWait()
+        userinput = 0
+        userinput = input("Would you like to try looking up something else?[y/n]")
+        if userinput =="y":
+            research()
+
 def startup(user):
     # Grab Weather NEED TO UNCOMMENT TO USE
-    temp,desc = andNowTheWeather()
+    ################################temp,desc = andNowTheWeather()
 
     # Assistant greets User
     greeting = butObeyWeMust()
     engine.say(greeting+" "+user.name)
     engine.runAndWait()
     # Assistant discusses the weather
-    engine.say("It is currently " +str(temp) + "degrees in North Orlando.")
+    ################################engine.say("It is currently " +str(temp) + "degrees in North Orlando.")
     engine.runAndWait()
 
 def mainMenu(user,assist):
@@ -365,8 +399,9 @@ def mainMenu(user,assist):
     userinput = int(input("""
         0. Recordkeeping
         1. Recommendations
-        2. Manage Personal Settings
-        3. Manage Assistant Settings
+        2. Research & Retrieval
+        3. Manage Personal Settings
+        4. Manage Assistant Settings
     """))
 
     if userinput == 0:
@@ -374,8 +409,10 @@ def mainMenu(user,assist):
     elif userinput == 1:
         print("recommendations")
     elif userinput == 2:
-        changePersonalMenu(user)
+        research()
     elif userinput == 3:
+        changePersonalMenu(user)
+    elif userinput == 4:
         changeAssistantMenu(assist)
     else:
         engine.say("Back to work then.")
