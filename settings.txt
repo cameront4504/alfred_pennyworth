@@ -1,9 +1,8 @@
 {
     "user": [
         {
-            "fname": "Damien",
-            "lname": "Wayne",
-            "nickname": "Daymi"
+            "name": "Cameron",
+            "nickname": "Cam"
         }
     ],
     "assistant": [
