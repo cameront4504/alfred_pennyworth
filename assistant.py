@@ -13,8 +13,9 @@
             [ ] Recommendations
                     - By Genre
                     - By Mood
-            [x] Research
-                    - wikipeida lookup
+            [ ] Research
+                    - wikipedia lookup
+                    - BUG: What to do if page lookup fails
             [ ] Games & Entertainment
             [x] Assistant Remembering User if interacted before
             [x] Settings JSON
