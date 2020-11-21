@@ -515,7 +515,7 @@ def dailyTrackers():
     userinput = -1
     userinput = int(input("""
         0. Create a new tracker
-        1. Create an entry for an existing tracker
+        1. Create an entry for an existing tracker (WIP)
         2. Edit an entry for an existing tracker (WIP)
         3. View all entries for an existing tracker (WIP)
     """))
