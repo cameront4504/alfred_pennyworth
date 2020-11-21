@@ -6,16 +6,17 @@
 # TO DO LIST
 
         - Features:
-            [ ] Bullet Journal
+            [ ] Recordkeeping
                     - Scheduling
                     - Habits
                     - Budgeting
+                    - Taste Tracker
             [ ] Recommendations
                     - By Genre
                     - By Mood
             [ ] Research
-                    - wikipedia lookup
                     - BUG: What to do if page lookup fails
+                    - BUG: Why does browser not open sometimes
             [ ] Games & Entertainment
             [x] Assistant Remembering User if interacted before
             [x] Settings JSON
@@ -23,6 +24,7 @@
         - Cleanup / Streamlining
             [x] JSON reading and writing?
             [ ] User Input (Have checkUserInput that accepts options parameter; use array of options to print(?))
+            [ ] Creating local variables for dialogue / printing (what is spoken and printed)
 
 """
 
@@ -93,6 +95,13 @@ class Assistant(object):
     def __init__(self,name,status):
         self.name = name
         self.status = status
+
+class Tracker(object):
+    def __inite__(self,name,date,entries,entry):
+        self.name = name
+        self.date = date
+        self.entries = entries
+        self.entry = entry
 
 #--------------------------------------------------------------------------
 
@@ -170,7 +179,7 @@ def grabSettings():
     # return values for user class
     return name, nickname, a_name, a_bool
 
-def updateSettings(updateWho,changedValue,newValue):
+def updateSettings(updateWhat,changedValue,newValue):
     # Handles all changes to the assistant
     # First, open settings.txt and create a data from the readings
     with open('settings.txt') as json_file:
@@ -182,7 +191,7 @@ def updateSettings(updateWho,changedValue,newValue):
 
         # IF A NAME WAS UPDATED
         if changedValue == "name":
-            if updateWho == "user":
+            if updateWhat == "user":
                 data['user'][0]['name'] = newValue
             else:
                 data['assistant'][0]['name'] = newValue
@@ -193,9 +202,19 @@ def updateSettings(updateWho,changedValue,newValue):
 
         # IF ASSISTANT VOICE WAS UPDATED
         if changedValue == "voice":
-            with open('settings.txt') as json_file:
-                data = json.load(json_file)
-                data['assistant'][0]['id'] = newValue
+            data = json.load(json_file)
+            data['assistant'][0]['id'] = newValue
+
+        # IF A NEW TRACKER WAS ADDED
+        if changedValue == "newTracker":
+            lastID = int(data['trackers'][-1]['id'])
+            nextID = str(lastID + 1)
+            newTracker = {
+                "id": ""+nextID+"",
+                "name": ""+newValue+"",
+                "entries": []
+                }
+            data['trackers'].append(newTracker)
 
     # WRITE TO SETTINGS.TXT     
     with open('settings.txt', 'w') as json_file:
@@ -234,10 +253,10 @@ def changeAssistVoice():
         # update settings
         engine.say("Voice confirmed.")
         engine.runAndWait()
-        updateWho = "assistant"
+        updateWhat = "assistant"
         changedValue = "voice"
         newValue = voices[newVoice].id
-        updateSettings(updateWho,changedValue,newValue)
+        updateSettings(updateWhat,changedValue,newValue)
         
     elif userinput == "n":
         engine.say("Very well, the voice will remain the same.")
@@ -266,10 +285,10 @@ def changeAssistName(assist):
     # set new details and send to updateSettings
     engine.say(assistName+" it is.")
     engine.runAndWait()
-    updateWho = "assistant"
+    updateWhat = "assistant"
     changedValue = "name"
     newValue = assistName
-    updateSettings(updateWho,changedValue,newValue)
+    updateSettings(updateWhat,changedValue,newValue)
 
 def changeAssistantMenu(assist):
     engine.say("Here are your options. What would you like to change?")
@@ -303,10 +322,10 @@ def changePersonalName(user):
             newName = input("I must have misheard. What would you prefer?")
 
     # set new details and send to updateSettings
-    updateWho = "user"
+    updateWhat = "user"
     changedValue = "name"
     newValue = newName
-    updateSettings(updateWho,changedValue,newValue)
+    updateSettings(updateWhat,changedValue,newValue)
 
     # ask if user wants a nickname
     engine.say(newName+" it is. Would you like to have a nickname?")
@@ -331,26 +350,122 @@ def changePersonalName(user):
     else:
         nickname = user.name
     # If nickname, send to updateSettings
-    updateWho = "user"
+    updateWhat = "user"
     changedValue = "nickname"
     newValue = nickname
-    updateSettings(updateWho,changedValue,newValue)
+    updateSettings(updateWhat,changedValue,newValue)
 
 def changePersonalMenu(user):
     engine.say("Here are your options. What would you like to change?")
     engine.runAndWait()
     userinput = int(input("""
         0. Change Name And/Or Nickname
-        1. ???? I don't know yet
+        1. WIP
     """))
 
     if userinput == 0:
         changePersonalName()
     elif userinput == 1:
         print("something")
+    else:
+        print("bye")
+
+# WIP ----------------------------------------------------------------------------------------------------------
 
 def recordKeeping():
     print("recordkeeping menu")
+
+def addTrackerEntry():
+    print("daily entry added")
+
+def dailyTrackerNew():
+    newTracker = 0
+    current = "What would you like to call this tracker?"
+    engine.say(current)
+    engine.runAndWait()
+    while isinstance(newTracker, str) == False:
+        newTracker = input(current)
+
+    userinput = 0
+    current = "You've entered "+newTracker+". Is that correct?"
+    while userinput != "y":
+        engine.say(current)
+        engine.runAndWait()
+        userinput = input(current+" [y/n]")
+        if userinput == "n":
+            engine.say("I must have misheard. What would you like to call this tracker?")
+            engine.runAndWait()
+            nickname = input("I must have misheard. What would you like to call this tracker?")
+
+    updateWhat = "trackers"
+    changedValue = "newTracker"
+    newValue = newTracker
+    updateSettings(updateWhat,changedValue,newValue)
+
+    userinput = 0
+    current = "Would you like to add an entry for this tracker today?"
+    engine.say(current)
+    engine.runAndWait()
+    userinput = input(current+" [y/n]")
+
+    if userinput == "y":
+        addTrackerEntry()
+
+def dailyTrackers():
+    # section for keeping track of habits
+    # Ex: did dishes today, drank enough water, did SOME homework at least
+    print("daily trackers")
+
+    # make new tracker
+    # add an entry for a tracker
+    # edit an entry (need in case date wrong?)
+    # view all entries for tracker
+
+    userinput = -1
+    userinput = int(input("""
+        0. Create a new tracker
+        1. Create an entry for an existing tracker
+        2. Edit an entry for an existing tracker
+        3. View all entries for an existing tracker
+    """))
+
+    if userinput == 0:
+        dailyTrackerNew()
+    elif userinput == 1:
+        addTrackerEntry()
+    elif userinput == 2:
+        print("edit entry")
+    elif userinput == 3:
+        print("view alle entries")
+    else:
+        engine.say("Back to work then.")
+        engine.runAndWait()
+
+def tasteTracker():
+    # Inspired by those silly updates on deviantArt
+    # (CURRENTLY) What have you been up to:
+    #    Listening to, playing, watching, eating, quote of the day
+    print("Taste Tracker")
+
+def lookingAhead():
+    # section for goals, upcoming events, and other things of note
+    print("looking ahead")
+
+def birthdays():
+    # section to add birthdays or edit current entries
+    print("birthdays")
+
+    # update my birthday
+    # add a birthday for someone else
+    # edit an entry (need in case date wrong?)
+    # delete an entry oof ouchies
+
+# WIP ----------------------------------------------------------------------------------------------------------
+
+def recommendations():
+    # section to get a song recommendation
+    # By genre, mood, or, if tastes have been updated, maybe compile some by genre???
+    print("Recommendations menu")
 
 def research():
     engine.say("what would you like to research?")
@@ -370,13 +485,13 @@ def research():
         2. Finish Research""")
 
     if userinput == 0:
+        # BUG x 2
         url = "https://en.wikipedia.org/wiki/"+topic
         webbrowser.open(url, new=2)
     elif userinput == 1:
         research()
 
 def enchantee(user,assist):
-    print("enchantee")
     engine.say("Hello. Welcome to ALFRED, a personal assistant application. To begin, let's set up your user configuration.")
     engine.runAndWait()
 
@@ -395,10 +510,10 @@ def enchantee(user,assist):
     engine.say("I'm pleased to meet you "+user.name)
     engine.runAndWait()
 
-    updateWho = "assistant"
+    updateWhat = "assistant"
     changedValue = "status"
     newValue = "True"
-    updateSettings(updateWho,changedValue,newValue)
+    updateSettings(updateWhat,changedValue,newValue)
 
 def startup(user):
     # Grab Weather NEED TO UNCOMMENT TO USE
@@ -464,7 +579,7 @@ def mainMenu(user,assist):
 # 4.0 EXECUTION
 
 #--------------------------------------------------------------------------
-
+"""
 # Startup
 
 # Grab settings
@@ -480,4 +595,5 @@ if a_bool == "False":
 else:
     startup(theUser)
 
-#mainMenu(theUser,theAssistant)
+mainMenu(theUser,theAssistant)
+"""
