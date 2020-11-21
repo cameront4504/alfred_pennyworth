@@ -26,6 +26,43 @@
             [ ] User Input (Have checkUserInput that accepts options parameter; use array of options to print(?))
             [ ] Creating local variables for dialogue / printing (what is spoken and printed)
 
+ex user input
+
+menu = settings
+current = "string"
+voice.says(current)
+input(string)
+
+so condensed:
+
+while userinput != "y":
+    string = "im a question"
+    engine.say(string)
+    engine.runAndWait()
+    userinput = input(string+" [y/n]")
+    if userinput == "n":
+        engine.say("I must have misheard. What would you prefer?")
+        engine.runAndWait()
+        newName = input("I must have misheard. What would you prefer?")
+
+how to clean yes/no check?
+
+def checkUserInput():
+    if menu == "dailytracker"
+        string = "Im a question related to trackers"
+    elif menu == "changeVoice"
+        string = "Would you like to change voice?"
+    while userinput != "y":
+        engine.say(string)
+        engine.runAndWait()
+        userinput = input(string+" [y/n]")
+        if userinput == "n":
+            engine.say("I must have misheard. What would you prefer?")
+            engine.runAndWait()
+            newName = input("I must have misheard. What would you prefer?")
+
+Instead of repeating so many lines that do same thing? Maybe, but does it help clarity?
+
 """
 
 #--------------------------------------------------------------------------
@@ -34,30 +71,48 @@
 
 #--------------------------------------------------------------------------
 
-# WIP functions have the string of ++++
-
 # 1.0 SETUP
+#
 #       - Libraries / Addons
 #       - Classes / Objects
+#
 # 2.0 FUNCTIONS (relationship based, see outline for positions)
+#
+#       Startup / Initialize //
+#
+#       - enchantee: Checks if user's first time running program, and if so, runs several of main functions
 #       - startup: Begins program using the following functions
 #           + andNowTheWeather: Grabs weather from openweathermap API
 #           + timeIsAConstruct: Generates current date/time in specific format
 #           + butObeyWeMust: Uses date/time data to change program greeting
+#
+#       Main Functions //
+#
 #       - mainMenu: Main menu of sorts, grants access to app's primary functions
-#           + recordKeeping +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ WIP
-#           + research: Lets user look up stuff via wikipedia library
+#       - recordKeeping
+#       - dailyTracker: Bullet Journal -esque system
+#           + dailyTrackerNewTracker: Lets user append new tracker to settings.txt
+#           + dailyTrackerAddEntry: Lets user add dated entry to an existing tracker
+#             (Ex: November 20: Marked Yes for Doing the Dishes)
+#       - recommendations:
+#       - research: Lets user look up stuff via wikipedia library
+#
+#       Settings //
+#
+#       - updateSettings: Writes any changes to settings.txt via JSON
 #       - changeAssistantMenu: Features all stuff below
 #           + changeAssistVoice: Change assistant's voice
 #           + changeAssistName: Change assistant's name
-#           + changePersonality: Change assistant's personality +++++++++++++++++++++++++++++++++++++++++ WIP
 #       - changePersonalMenu: Features all stuff below; update user information
 #           + changeName: Change user's name and/or nickname
-#           + changeHonor: Change term of addressment (Sir, Ma'am, Serah, Madam, etc.) ++++++++++++++++++ WIP
-#       - updateSettings: Writes any changes to settings.txt via JSON
-#       - Other Stuff:
-#           + badResponse: Called whenever user enters a bad value for input
-# 3.0 BUILDING GUI
+#
+#       Other Stuff
+#
+#       - Housekeeping Stuff
+#       - Cut Content: Birthdays, Looking Ahead
+#
+# 3.0 BUILDING GUI (WIP)
+#
 # 4.0 EXECUTION
 
 #--------------------------------------------------------------------------
@@ -109,11 +164,6 @@ class Tracker(object):
 
 #--------------------------------------------------------------------------
 
-
-def badResponse():
-    engine.say("That response doesn't work here.")
-    engine.runAndWait()
-
 def andNowTheWeather():
     # Get JSON from openweathermap.org and create an object using data
     # Formatted as: Temp, Description
@@ -129,20 +179,19 @@ def timeIsAConstruct():
     # Formatted mm-dd-yyyy and 00:00 in the 12 hour system
 
     d = date.today()
-    theDate = d.strftime("%B %d, %Y")
     t = datetime.now()
-    theTime = t.strftime("%I:%M %p")
-
-    return theDate, theTime
+    return d,t
 
 def butObeyWeMust():
-    date, time = timeIsAConstruct()
+    d, t = timeIsAConstruct()
+    date = d.strftime("%B %d, %Y")
+    time = t.strftime("%I:%M %p")
 
     # CHECK: Is time AM or PM? Then, decide what time of day.
     # This is the epitome of creator bias.
     # AM
     currentHour = int(time[1])
-    timeGreeting = "default"
+    timeGreeting = "Hello"
     if time[6] == "A":
         if currentHour <= 4 or currentHour == 12:
             timeGreeting = "Happy Witching Hours"
@@ -180,7 +229,7 @@ def grabSettings():
     return name, nickname, a_name, a_bool
 
 def updateSettings(updateWhat,changedValue,newValue):
-    # Handles all changes to the assistant
+    # Handles all changes to settings.txt JSON
     # First, open settings.txt and create a data from the readings
     with open('settings.txt') as json_file:
         data = json.load(json_file)
@@ -215,6 +264,12 @@ def updateSettings(updateWhat,changedValue,newValue):
                 "entries": []
                 }
             data['trackers'].append(newTracker)
+        
+        # IF A TRACKER ENTRY WAS ADDED
+        # this works if new tracker, but what about old ones?
+        if changedValue == "trackerEntry":
+            id = int(data['trackers'][-1]['id'])
+            data['trackers'][id]['entries'].append(newValue)
 
     # WRITE TO SETTINGS.TXT     
     with open('settings.txt', 'w') as json_file:
@@ -261,8 +316,6 @@ def changeAssistVoice():
     elif userinput == "n":
         engine.say("Very well, the voice will remain the same.")
         engine.runAndWait()
-    else:
-        badResponse()
 
 def changeAssistName(assist):
     engine.say("I'm currently called " + assist.name+ ". What would you like to call me?")
@@ -373,12 +426,33 @@ def changePersonalMenu(user):
 # WIP ----------------------------------------------------------------------------------------------------------
 
 def recordKeeping():
-    print("recordkeeping menu")
+    engine.say("What would you like to check?")
+    engine.runAndWait()
 
-def addTrackerEntry():
+    userinput = -1
+    userinput = int(input("""
+        0. Budgeting (WIP)
+        1. Scheduling (WIP)
+        2. Daily Task Trackers
+        3. Current Taste Trackers (WIP)
+    """))
+
+    if userinput == 0:
+        print("budgeting")
+    elif userinput == 1:
+        print("scheduling")
+    elif userinput == 2:
+        dailyTrackers()
+    elif userinput == 3:
+        tasteTracker()
+    else:
+        engine.say("Back to work then.")
+        engine.runAndWait()
+
+def dailyTrackerAddEntry():
     print("daily entry added")
 
-def dailyTrackerNew():
+def dailyTrackerNewTracker():
     newTracker = 0
     current = "What would you like to call this tracker?"
     engine.say(current)
@@ -395,13 +469,16 @@ def dailyTrackerNew():
         if userinput == "n":
             engine.say("I must have misheard. What would you like to call this tracker?")
             engine.runAndWait()
-            nickname = input("I must have misheard. What would you like to call this tracker?")
+            newTracker = input("I must have misheard. What would you like to call this tracker?")
 
+    # Send new Tracker to settings.txt for update/append
     updateWhat = "trackers"
     changedValue = "newTracker"
     newValue = newTracker
     updateSettings(updateWhat,changedValue,newValue)
 
+    # check if user wants to add an entry immediately
+    # if so, switch to dailyTrackerAddEntry
     userinput = 0
     current = "Would you like to add an entry for this tracker today?"
     engine.say(current)
@@ -409,7 +486,21 @@ def dailyTrackerNew():
     userinput = input(current+" [y/n]")
 
     if userinput == "y":
-        addTrackerEntry()
+        userinput = 0
+        d,_ = timeIsAConstruct()
+        dateFormatted = d.strftime("%m_%d_%Y")
+
+        updateWhat = "trackers"
+        changedValue = "newEntry"
+        
+        entry = input("Do you want to mark today's entry for complete or incomplete?[1/0]")
+
+        newEntry = dateFormatted+": "+entry
+
+        updateWhat = "trackers"
+        changedValue = "trackerEntry"
+        newValue = newEntry
+        updateSettings(updateWhat,changedValue,newValue)
 
 def dailyTrackers():
     # section for keeping track of habits
@@ -425,18 +516,18 @@ def dailyTrackers():
     userinput = int(input("""
         0. Create a new tracker
         1. Create an entry for an existing tracker
-        2. Edit an entry for an existing tracker
-        3. View all entries for an existing tracker
+        2. Edit an entry for an existing tracker (WIP)
+        3. View all entries for an existing tracker (WIP)
     """))
 
     if userinput == 0:
-        dailyTrackerNew()
+        dailyTrackerNewTracker()
     elif userinput == 1:
-        addTrackerEntry()
+        dailyTrackerAddEntry()
     elif userinput == 2:
         print("edit entry")
     elif userinput == 3:
-        print("view alle entries")
+        print("view all entries")
     else:
         engine.say("Back to work then.")
         engine.runAndWait()
@@ -447,25 +538,24 @@ def tasteTracker():
     #    Listening to, playing, watching, eating, quote of the day
     print("Taste Tracker")
 
-def lookingAhead():
+# def lookingAhead():
     # section for goals, upcoming events, and other things of note
-    print("looking ahead")
+    #    print("looking ahead")
 
-def birthdays():
+#def birthdays():
     # section to add birthdays or edit current entries
-    print("birthdays")
 
     # update my birthday
     # add a birthday for someone else
     # edit an entry (need in case date wrong?)
     # delete an entry oof ouchies
 
-# WIP ----------------------------------------------------------------------------------------------------------
-
 def recommendations():
     # section to get a song recommendation
     # By genre, mood, or, if tastes have been updated, maybe compile some by genre???
     print("Recommendations menu")
+
+# WIP ----------------------------------------------------------------------------------------------------------
 
 def research():
     engine.say("what would you like to research?")
@@ -536,7 +626,7 @@ def mainMenu(user,assist):
     userinput = -1
     userinput = int(input("""
         0. Recordkeeping
-        1. Recommendations
+        1. Recommendations (WIP)
         2. Research & Information
         3. Manage Personal Settings
         4. Manage Assistant Settings
@@ -562,6 +652,8 @@ def mainMenu(user,assist):
 
 #--------------------------------------------------------------------------
 
+# Honestly, this is probably going to get relegated to next semester or post-thesis
+
 #root = Tk()
 
 #def myClick():
@@ -579,7 +671,7 @@ def mainMenu(user,assist):
 # 4.0 EXECUTION
 
 #--------------------------------------------------------------------------
-"""
+
 # Startup
 
 # Grab settings
@@ -596,4 +688,3 @@ else:
     startup(theUser)
 
 mainMenu(theUser,theAssistant)
-"""
