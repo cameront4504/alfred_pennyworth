@@ -31,6 +31,7 @@
                             engine.runAndWait()
                     [x] Go through functions and update with it
 
+
 """
 
 #--------------------------------------------------------------------------
@@ -437,6 +438,7 @@ def recordKeeping():
 
 def updateTrackers(tracker,entry):
     # Similar to updateSettings, but trackers.txt
+    # I want to keep most of the JSON affecting stuff together if I can
     with open('trackers.txt') as json_file:
         data = json.load(json_file)
 
@@ -505,8 +507,6 @@ def dailyTrackerAddEntry():
             newValue = newEntry
             updateTrackers(tracker,newEntry)
 
-dailyTrackerAddEntry()
-
 def dailyTrackerNewTracker():
     newTracker = 0
     current = "What would you like to call this tracker?"
@@ -548,14 +548,45 @@ def dailyTrackerNewTracker():
         newValue = newEntry
         updateTrackers(newTracker,newEntry)
 
+        current = "Tracker updated."
+        doNotLetHimSpeak(current)
+        print(current)
+
+def dailyTrackersViewAll():
+    # Display current Trackers by ID
+    current = "These are your current Trackers:"
+    doNotLetHimSpeak(current)
+    print(current+"\n")
+
+    with open('trackers.txt') as json_file:
+        data = json.load(json_file)
+        for d in data['trackers']:
+            print(d['id'] +". "+ d['name'])
+
+        current = "For which would you like to view the entries?"
+        doNotLetHimSpeak(current)
+        userinput = int(input("\n"+current+"\n"))
+
+        # Grab all entries and split by date and status (complete/incomplete)
+        # Don't need to rid of : necessarily, but might do some stuff here in future
+        entries = data['trackers'][userinput]['entries']
+        translateStatus = "Translate"
+        print(data['trackers'][userinput]['name']+":")
+        for entry in entries:
+            cleaned = entry.replace(":"," ")
+            date,status = cleaned.split("  ",1)
+            # Translate binary to more human friendly terms
+            if status == "1":
+                translateStatus = "Complete"
+            else:
+                translateStatus = "Incomplete"
+            print(date+": "+ translateStatus)
+
+dailyTrackersViewAll()
+
 def dailyTrackers():
     # section for keeping track of habits
     # Ex: did dishes today, drank enough water, did SOME homework at least
-
-    # make new tracker
-    # add an entry for a tracker
-    # edit an entry (need in case date wrong?)
-    # view all entries for tracker
 
     current = "What would you like to do with your trackers?"
     doNotLetHimSpeak(current)
@@ -564,7 +595,7 @@ def dailyTrackers():
     userinput = -1
     userinput = int(input("""
         0. Create a new tracker
-        1. Create an entry for an existing tracker (WIP)
+        1. Create an entry for an existing tracker
         2. Edit an entry for an existing tracker (WIP)
         3. View all entries for an existing tracker (WIP)
     """))
@@ -580,6 +611,8 @@ def dailyTrackers():
     else:
         current = "Back to work then."
         doNotLetHimSpeak(current)
+
+# WIP ----------------------------------------------------------------------------------------------------------
 
 def tasteTracker():
     # Inspired by those silly updates on deviantArt
@@ -736,8 +769,8 @@ theAssistant = Assistant(a_name, a_bool)
 # check if first-time user
 if a_bool == "False":
     enchantee(theUser,theAssistant)
-else:
-    startup(theUser)
+#else:
+    #startup(theUser)
 
 mainMenu(theUser,theAssistant)
 """
