@@ -7,16 +7,16 @@
 
         - Features:
             [ ] Recordkeeping
-                    - Scheduling
-                    - Habits
-                    - Budgeting
-                    - Taste Tracker
+                    [ ] Scheduling
+                    [x] Habits
+                    [ ] Budgeting
+                    [ ] Taste Tracker
             [ ] Recommendations
-                    - By Genre
-                    - By Mood
+                    [ ] By Genre
+                    [ ] By Mood
             [ ] Research
-                    - BUG: What to do if page lookup fails
-                    - BUG: Why does browser not open sometimes
+                    [ ] BUG: What to do if page lookup fails
+                    [ ] BUG: Why does browser not open sometimes
             [ ] Games & Entertainment
             [x] Assistant Remembering User if interacted before
             [x] Settings JSON
@@ -25,43 +25,11 @@
             [x] JSON reading and writing?
             [ ] User Input (Have checkUserInput that accepts options parameter; use array of options to print(?))
             [ ] Creating local variables for dialogue / printing (what is spoken and printed)
-
-ex user input
-
-menu = settings
-current = "string"
-voice.says(current)
-input(string)
-
-so condensed:
-
-while userinput != "y":
-    string = "im a question"
-    engine.say(string)
-    engine.runAndWait()
-    userinput = input(string+" [y/n]")
-    if userinput == "n":
-        engine.say("I must have misheard. What would you prefer?")
-        engine.runAndWait()
-        newName = input("I must have misheard. What would you prefer?")
-
-how to clean yes/no check?
-
-def checkUserInput():
-    if menu == "dailytracker"
-        string = "Im a question related to trackers"
-    elif menu == "changeVoice"
-        string = "Would you like to change voice?"
-    while userinput != "y":
-        engine.say(string)
-        engine.runAndWait()
-        userinput = input(string+" [y/n]")
-        if userinput == "n":
-            engine.say("I must have misheard. What would you prefer?")
-            engine.runAndWait()
-            newName = input("I must have misheard. What would you prefer?")
-
-Instead of repeating so many lines that do same thing? Maybe, but does it help clarity?
+            [] Create speech function
+                    [x] assistantSpeech(current):
+                            engine.say(current)
+                            engine.runAndWait()
+                    [x] Go through functions and update with it
 
 """
 
@@ -163,6 +131,12 @@ class Tracker(object):
 # 2.0 FUNCTIONS
 
 #--------------------------------------------------------------------------
+
+def doNotLetHimSpeak(currentDialogue):
+    # Said Aragorn, but it's Gandalf, ya dingus
+    # Tiny function, but it helps condense four-five lines into two, generally
+    engine.say(currentDialogue)
+    engine.runAndWait()
 
 def andNowTheWeather():
     # Get JSON from openweathermap.org and create an object using data
@@ -282,70 +256,80 @@ def changeAssistVoice():
     for voice in voices:
         print(str(option)+". "+ voice.name)
         option += 1
-    engine.say("These are the current voices on your machine:")
-    engine.runAndWait()
+
+    current = "These are the current voices on your machine:"
+    doNotLetHimSpeak(current)
 
     # CHECK: change voice
-    engine.say("Would you like to swap for one?")
-    engine.runAndWait()
-    userinput = input("Would you like to swap for one? [y/n]")
+    current = "Would you like to swap for one?"
+    doNotLetHimSpeak(current)
+    userinput = input(current+" [y/n]")
+
     if userinput == "y":
         # keep looping through test until user selects voice
         # reset variables to use as bools, in a sense
         userinput = 0
         newVoice = 0
         while userinput != "y":
-            engine.say("Very well. Which voice would you like?")
-            engine.runAndWait()
+            current = "Very well. Which voice would you like?"
+            doNotLetHimSpeak(current)
+            
             # Grab user input and test voice
-            newVoice = int(input("Which voice would you like?"))
+            newVoice = int(input(current))
             voice_id = voices[newVoice].id
             engine.setProperty('voice', voice_id)
-            engine.say("This is how it sounds, is that alright?")
-            engine.runAndWait()
-            userinput = input("This is how it sounds, is that alright?[y/n]")
+
+            # test for feedback
+            current = "This is how it sounds, is that alright?"
+            doNotLetHimSpeak(current)
+            userinput = input(current+" [y/n]")
         
+        # vocal confirmation
+        current = "Voice confirmed."
+        doNotLetHimSpeak(current)
+
         # update settings
-        engine.say("Voice confirmed.")
-        engine.runAndWait()
         updateWhat = "assistant"
         changedValue = "voice"
         newValue = voices[newVoice].id
         updateSettings(updateWhat,changedValue,newValue)
         
     elif userinput == "n":
-        engine.say("Very well, the voice will remain the same.")
-        engine.runAndWait()
+        current = "Very well, the voice will remain the same."
+        doNotLetHimSpeak(current)
 
 def changeAssistName(assist):
-    engine.say("I'm currently called " + assist.name+ ". What would you like to call me?")
-    engine.runAndWait()
+    current = "I'm currently called " + assist.name+ ". What would you like to call me?"
+    doNotLetHimSpeak(current)
     assistName = 0
     userinput = 0
     # Until a proper string is entered, ask for input
     while isinstance(assistName, str) == False:
-        assistName = input("What would like to call me?")
+        assistName = input(current)
 
     while userinput != "y":
-        engine.say("You've entered "+assistName+". Is that correct?")
-        engine.runAndWait()
-        userinput = input("You've entered "+assistName+". Is that correct? [y/n]")
+        current = "You've entered "+assistName+". Is that correct?"
+        doNotLetHimSpeak(current)
+        userinput = input(current+" [y/n]")
         if userinput == "n":
-            engine.say("I must have misheard. What would you prefer?")
-            engine.runAndWait()
-            assistName = input("I must have misheard. What would you prefer?")
+            current = "I must have misheard. What would you prefer?"
+            doNotLetHimSpeak(current)
+            assistName = input(current)
 
     # set new details and send to updateSettings
-    engine.say(assistName+" it is.")
-    engine.runAndWait()
+    current = assistName+" it is."
+    doNotLetHimSpeak(current)
+
     updateWhat = "assistant"
     changedValue = "name"
     newValue = assistName
     updateSettings(updateWhat,changedValue,newValue)
 
 def changeAssistantMenu(assist):
-    engine.say("Here are your options. What would you like to change?")
-    engine.runAndWait()
+    current = "Here are your options. What would you like to change?"
+    doNotLetHimSpeak(current)
+    print(current)
+
     userinput = int(input("""
         0. Rename Assistant
         1. Change Assistant Voice
@@ -357,8 +341,9 @@ def changeAssistantMenu(assist):
         changeAssistVoice()
 
 def changePersonalName(user):
-    engine.say("What would you prefer to be called?")
-    engine.runAndWait()
+    current = "What would you prefer to be called?"
+    doNotLetHimSpeak(current)
+
     newName = 0
     userinput = 0
     # Until a proper string is entered, ask for input
@@ -366,13 +351,14 @@ def changePersonalName(user):
         newName = input("What would you prefer to be called?")
 
     while userinput != "y":
-        engine.say("You've entered "+newName+". Is that correct?")
-        engine.runAndWait()
-        userinput = input("You've entered "+newName+". Is that correct? [y/n]")
+        current = "You've entered "+newName+". Is that correct?"
+        doNotLetHimSpeak(current)
+        userinput = input(current+" [y/n]")
         if userinput == "n":
-            engine.say("I must have misheard. What would you prefer?")
+            current = "I must have misheard. What would you prefer?"
+            engine.say(current)
             engine.runAndWait()
-            newName = input("I must have misheard. What would you prefer?")
+            newName = input(current)
 
     # set new details and send to updateSettings
     updateWhat = "user"
@@ -381,25 +367,26 @@ def changePersonalName(user):
     updateSettings(updateWhat,changedValue,newValue)
 
     # ask if user wants a nickname
-    engine.say(newName+" it is. Would you like to have a nickname?")
-    engine.runAndWait()
+    current = newName+" it is. Would you like to have a nickname?"
+    doNotLetHimSpeak(current)
     nickname = 0
-    userinput = input("Would you like to have a nickname?")
+    userinput = input(current)
     if userinput == "y":
-        engine.say("What nickname would you like?")
-        engine.runAndWait()
+        current = "What nickname would you like?"
+        doNotLetHimSpeak(current)
         while isinstance(nickname, str) == False:
-            nickname = input("What nickname would you like?")
+            nickname = input(current)
 
         userinput = 0
         while userinput != "y":
-            engine.say("You've entered "+nickname+". Is that correct?")
-            engine.runAndWait()
-            userinput = input("You've entered "+nickname+". Is that correct? [y/n]")
+            current = "You've entered "+nickname+". Is that correct?"
+            doNotLetHimSpeak(current)
+            userinput = input(current+" [y/n]")
             if userinput == "n":
-                engine.say("I must have misheard. What would you prefer?")
+                current = "I must have misheard. What would you prefer?"
+                engine.say(current)
                 engine.runAndWait()
-                nickname = input("I must have misheard. What would you prefer?")
+                nickname = input(current)
     else:
         nickname = user.name
     # If nickname, send to updateSettings
@@ -409,8 +396,9 @@ def changePersonalName(user):
     updateSettings(updateWhat,changedValue,newValue)
 
 def changePersonalMenu(user):
-    engine.say("Here are your options. What would you like to change?")
-    engine.runAndWait()
+    current = "Here are your options. What would you like to change?"
+    doNotLetHimSpeak(current)
+
     userinput = int(input("""
         0. Change Name And/Or Nickname
         1. WIP
@@ -423,11 +411,9 @@ def changePersonalMenu(user):
     else:
         print("bye")
 
-# WIP ----------------------------------------------------------------------------------------------------------
-
 def recordKeeping():
-    engine.say("What would you like to check?")
-    engine.runAndWait()
+    current = "What would you like to check?"
+    doNotLetHimSpeak(current)
 
     userinput = -1
     userinput = int(input("""
@@ -446,71 +432,134 @@ def recordKeeping():
     elif userinput == 3:
         tasteTracker()
     else:
-        engine.say("Back to work then.")
-        engine.runAndWait()
+        current = "Back to work then."
+        doNotLetHimSpeak(current)
+
+def updateTrackers(tracker,entry):
+    # Similar to updateSettings, but trackers.txt
+    with open('trackers.txt') as json_file:
+        data = json.load(json_file)
+
+        checkExists = False
+        id = -1
+
+        # CHECK IF TRACKER IS NEW
+        # Iterate over data to see if value exists, ignore case
+        for d in data['trackers']:
+            if d['name'].lower() == tracker.lower():
+                id = d['id']
+                checkExists = False
+                break
+            else:
+                checkExists = True
+
+        # IF NEW, ADD TO FILE
+        if checkExists == True:
+            lastID = int(data['trackers'][-1]['id'])
+            nextID = str(lastID + 1)
+            newTracker = {
+                "id": ""+nextID+"",
+                "name": ""+tracker+"",
+                "entries": []
+                }
+            data['trackers'].append(newTracker)
+        
+        # IF ENTRY WAS ADDED
+        if tracker != entry:
+            id = int(data['trackers'][-1]['id'])
+            data['trackers'][id]['entries'].append(entry)
+
+    # WRITE TO TRACKERS.TXT     
+    with open('trackers.txt', 'w') as json_file:
+            json_file.write(json.dumps(data,indent=4))
 
 def dailyTrackerAddEntry():
-    print("daily entry added")
+    # Display current Trackers by ID
+    current = "These are your current Trackers:"
+    doNotLetHimSpeak(current)
+    print(current)
+
+    with open('trackers.txt') as json_file:
+        data = json.load(json_file)
+        for d in data['trackers']:
+            print(d['id'] +". "+ d['name'])
+
+        current = "Which would you like to add an entry for?"
+        doNotLetHimSpeak(current)
+        userinput = int(input(current))
+
+        tracker = data['trackers'][userinput]['name']
+        current = "You've selected "+tracker+". Is that correct?"
+        doNotLetHimSpeak(current)
+        userinput = input(current+" [y/n]")
+
+        if userinput == "y":
+            d,_ = timeIsAConstruct()
+            dateFormatted = d.strftime("%m_%d_%Y")
+
+            current = "Do you want to mark today's entry for complete or incomplete?"
+            doNotLetHimSpeak(current)           
+            entry = input(current+" [1/0]")
+
+            newEntry = dateFormatted+": "+entry
+            newValue = newEntry
+            updateTrackers(tracker,newEntry)
+
+dailyTrackerAddEntry()
 
 def dailyTrackerNewTracker():
     newTracker = 0
     current = "What would you like to call this tracker?"
-    engine.say(current)
-    engine.runAndWait()
+    doNotLetHimSpeak(current)
     while isinstance(newTracker, str) == False:
         newTracker = input(current)
 
     userinput = 0
     current = "You've entered "+newTracker+". Is that correct?"
     while userinput != "y":
-        engine.say(current)
-        engine.runAndWait()
+        doNotLetHimSpeak(current)   
         userinput = input(current+" [y/n]")
         if userinput == "n":
-            engine.say("I must have misheard. What would you like to call this tracker?")
-            engine.runAndWait()
-            newTracker = input("I must have misheard. What would you like to call this tracker?")
+            current = "I must have misheard. What would you like to call this tracker?"
+            doNotLetHimSpeak(current)   
+            newTracker = input(current)
 
     # Send new Tracker to settings.txt for update/append
-    updateWhat = "trackers"
-    changedValue = "newTracker"
-    newValue = newTracker
-    updateSettings(updateWhat,changedValue,newValue)
+    # Second value is boogey, basically
+    updateTrackers(newTracker,newTracker)
 
     # check if user wants to add an entry immediately
     # if so, switch to dailyTrackerAddEntry
     userinput = 0
     current = "Would you like to add an entry for this tracker today?"
-    engine.say(current)
-    engine.runAndWait()
+    doNotLetHimSpeak(current)
     userinput = input(current+" [y/n]")
 
     if userinput == "y":
         userinput = 0
         d,_ = timeIsAConstruct()
         dateFormatted = d.strftime("%m_%d_%Y")
-
-        updateWhat = "trackers"
-        changedValue = "newEntry"
         
-        entry = input("Do you want to mark today's entry for complete or incomplete?[1/0]")
+        current = "Do you want to mark today's entry for complete or incomplete?"
+        doNotLetHimSpeak(current)
+        entry = input(current+" [1/0]")
 
         newEntry = dateFormatted+": "+entry
-
-        updateWhat = "trackers"
-        changedValue = "trackerEntry"
         newValue = newEntry
-        updateSettings(updateWhat,changedValue,newValue)
+        updateTrackers(newTracker,newEntry)
 
 def dailyTrackers():
     # section for keeping track of habits
     # Ex: did dishes today, drank enough water, did SOME homework at least
-    print("daily trackers")
 
     # make new tracker
     # add an entry for a tracker
     # edit an entry (need in case date wrong?)
     # view all entries for tracker
+
+    current = "What would you like to do with your trackers?"
+    doNotLetHimSpeak(current)
+    print(current)
 
     userinput = -1
     userinput = int(input("""
@@ -529,18 +578,14 @@ def dailyTrackers():
     elif userinput == 3:
         print("view all entries")
     else:
-        engine.say("Back to work then.")
-        engine.runAndWait()
+        current = "Back to work then."
+        doNotLetHimSpeak(current)
 
 def tasteTracker():
     # Inspired by those silly updates on deviantArt
     # (CURRENTLY) What have you been up to:
     #    Listening to, playing, watching, eating, quote of the day
     print("Taste Tracker")
-
-# def lookingAhead():
-    # section for goals, upcoming events, and other things of note
-    #    print("looking ahead")
 
 #def birthdays():
     # section to add birthdays or edit current entries
@@ -558,18 +603,22 @@ def recommendations():
 # WIP ----------------------------------------------------------------------------------------------------------
 
 def research():
-    engine.say("what would you like to research?")
-    engine.runAndWait()
+    current = "What would you like to research?"
+    doNotLetHimSpeak(current)
 
-    topic = input ("What would you like to research?")
+    # get input and then search using Wikipedia API, limit 2 sentences
+    # print first because this'll probably take a bit for talks
+    topic = input (current)
     print(wikipedia.summary(topic, sentences=2))
-    engine.say("According to Wikipedia: "+wikipedia.summary(topic, sentences=2))
-    engine.runAndWait()
+    current = "According to Wikipedia: "+wikipedia.summary(topic, sentences=2)
+    doNotLetHimSpeak(current)
 
-    engine.say("Does that answer your questions? Otherwise, here are some other options.")
-    engine.runAndWait()
+    current = "Does that answer your questions? Otherwise, here are some other options."
+    doNotLetHimSpeak(current)
+    print(current)
+
     userinput = -1
-    userinput = input("""Does that answer your questions? Otherwise, here are some other options.
+    userinput = input("""
         0. Open Page in Browser
         1. Lookup Something Else
         2. Finish Research""")
@@ -582,46 +631,49 @@ def research():
         research()
 
 def enchantee(user,assist):
-    engine.say("Hello. Welcome to ALFRED, a personal assistant application. To begin, let's set up your user configuration.")
-    engine.runAndWait()
+    current = "Hello. Welcome to ALFRED, a personal assistant application. To begin, let's set up your user configuration."
+    doNotLetHimSpeak(current)
 
     changePersonalName(user)
 
-    engine.say("Now, let's set up a profile for your assistant.")
-    engine.runAndWait()
+    current = "Now, let's set up a profile for your assistant."
+    doNotLetHimSpeak(current)
 
     changeAssistVoice()
 
-    engine.say("What about a name?")
-    engine.runAndWait()
+    current = "How about a name?"
+    doNotLetHimSpeak(current)
 
     changeAssistName(assist)
 
-    engine.say("I'm pleased to meet you "+user.name)
-    engine.runAndWait()
+    current = "I'm pleased to meet you "+user.name
+    doNotLetHimSpeak(current)
 
+    # Set hasMet status to True
     updateWhat = "assistant"
     changedValue = "status"
     newValue = "True"
     updateSettings(updateWhat,changedValue,newValue)
 
 def startup(user):
-    # Grab Weather NEED TO UNCOMMENT TO USE
-    ################################temp,desc = andNowTheWeather()
+    # Grab Weather
+    temp,desc = andNowTheWeather()
 
     # Assistant greets User
     greeting = butObeyWeMust()
-    engine.say(greeting+" "+user.name)
-    engine.runAndWait()
+    current = greeting+" "+user.name
+    doNotLetHimSpeak(current)
+
     # Assistant discusses the weather
-    ################################engine.say("It is currently " +str(temp) + "degrees in North Orlando.")
-    engine.runAndWait()
+    current = "It is currently " +str(temp) + "degrees in North Orlando."
+    doNotLetHimSpeak(current)
 
 def mainMenu(user,assist):
     # Main menu that launches after startup
     # Links to all other functions/menus/etc
-    engine.say("What can I help you with?")
-    engine.runAndWait()
+    current = "What can I help you with?"
+    doNotLetHimSpeak(current)
+    print(current)
 
     userinput = -1
     userinput = int(input("""
@@ -643,8 +695,8 @@ def mainMenu(user,assist):
     elif userinput == 4:
         changeAssistantMenu(assist)
     else:
-        engine.say("Back to work then.")
-        engine.runAndWait()
+        current = "Back to work then."
+        doNotLetHimSpeak(current)
 
 #--------------------------------------------------------------------------
 
@@ -671,7 +723,7 @@ def mainMenu(user,assist):
 # 4.0 EXECUTION
 
 #--------------------------------------------------------------------------
-
+"""
 # Startup
 
 # Grab settings
@@ -688,3 +740,4 @@ else:
     startup(theUser)
 
 mainMenu(theUser,theAssistant)
+"""

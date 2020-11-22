@@ -11,23 +11,5 @@
             "name": "Alfred",
             "hasMetUser": "True"
         }
-    ],
-    "trackers": [
-        {
-            "id": "0",
-            "name": "Hour of Coding",
-            "entries": {
-                "11_20_2020": "1",
-                "11_21_2020": "1"
-            }
-        },
-        {
-            "id": "1",
-            "name": "Did the Dishes",
-            "entries": [
-                "11_20_2020: 1",
-                "11_21_2020: 0"
-            ]
-        }
     ]
 }
