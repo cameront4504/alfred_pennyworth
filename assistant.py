@@ -220,7 +220,6 @@ def updateSettings(updateWhat,changedValue,newValue):
 
         # IF ASSISTANT VOICE WAS UPDATED
         if changedValue == "voice":
-            data = json.load(json_file)
             data['assistant'][0]['id'] = newValue
 
         # IF A NEW TRACKER WAS ADDED
@@ -260,7 +259,7 @@ def changeAssistVoice():
     userinput = 0
     newVoice = 0
     while userinput != "y":
-        current = "Very well. Which voice would you like?"
+        current = "Which voice would you like?"
         doNotLetHimSpeak(current)
             
         # Grab user input and test voice
