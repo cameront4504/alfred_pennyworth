@@ -120,13 +120,6 @@ class Assistant(object):
         self.name = name
         self.status = status
 
-class Tracker(object):
-    def __inite__(self,name,date,entries,entry):
-        self.name = name
-        self.date = date
-        self.entries = entries
-        self.entry = entry
-
 #--------------------------------------------------------------------------
 
 # 2.0 FUNCTIONS
@@ -197,7 +190,7 @@ def grabSettings():
         for d in data['assistant']:
             voice = d['id']
             a_name = d['name']
-            a_bool = d['hasMetUser']
+            a_bool = d['hasMet']
     # Set voice from settings
     engine.setProperty('voice', voice)
     # return values for user class
@@ -211,7 +204,7 @@ def updateSettings(updateWhat,changedValue,newValue):
 
         # IF FIRST TIME USER
         if changedValue == "status":
-            data['assistant'][0]['hasMetUser'] = newValue
+            data['assistant'][0]['hasMet'] = newValue
 
         # IF A NAME WAS UPDATED
         if changedValue == "name":
@@ -261,43 +254,33 @@ def changeAssistVoice():
     current = "These are the current voices on your machine:"
     doNotLetHimSpeak(current)
 
-    # CHECK: change voice
-    current = "Would you like to swap for one?"
-    doNotLetHimSpeak(current)
-    userinput = input(current+" [y/n]")
-
-    if userinput == "y":
-        # keep looping through test until user selects voice
-        # reset variables to use as bools, in a sense
-        userinput = 0
-        newVoice = 0
-        while userinput != "y":
-            current = "Very well. Which voice would you like?"
-            doNotLetHimSpeak(current)
+     # keep looping through test until user selects voice
+    # reset variables to use as bools, in a sense
+    userinput = 0
+    newVoice = 0
+    while userinput != "y":
+        current = "Very well. Which voice would you like?"
+        doNotLetHimSpeak(current)
             
-            # Grab user input and test voice
-            newVoice = int(input(current))
-            voice_id = voices[newVoice].id
-            engine.setProperty('voice', voice_id)
+        # Grab user input and test voice
+        newVoice = int(input(current))
+        voice_id = voices[newVoice].id
+        engine.setProperty('voice', voice_id)
 
-            # test for feedback
-            current = "This is how it sounds, is that alright?"
-            doNotLetHimSpeak(current)
-            userinput = input(current+" [y/n]")
-        
-        # vocal confirmation
-        current = "Voice confirmed."
+        # test for feedback
+        current = "This is how it sounds, is that alright?"
         doNotLetHimSpeak(current)
+        userinput = input(current+" [y/n]")
+        
+    # vocal confirmation
+    current = "Voice confirmed."
+    doNotLetHimSpeak(current)
 
-        # update settings
-        updateWhat = "assistant"
-        changedValue = "voice"
-        newValue = voices[newVoice].id
-        updateSettings(updateWhat,changedValue,newValue)
-        
-    elif userinput == "n":
-        current = "Very well, the voice will remain the same."
-        doNotLetHimSpeak(current)
+    # update settings
+    updateWhat = "assistant"
+    changedValue = "voice"
+    newValue = voices[newVoice].id
+    updateSettings(updateWhat,changedValue,newValue)
 
 def changeAssistName(assist):
     current = "I'm currently called " + assist.name+ ". What would you like to call me?"
@@ -582,13 +565,11 @@ def dailyTrackersViewAll():
                 translateStatus = "Incomplete"
             print(date+": "+ translateStatus)
 
-dailyTrackersViewAll()
-
 def dailyTrackers():
     # section for keeping track of habits
     # Ex: did dishes today, drank enough water, did SOME homework at least
 
-    current = "What would you like to do with your trackers?"
+    current = "These are a few of the things you can do."
     doNotLetHimSpeak(current)
     print(current)
 
@@ -658,13 +639,14 @@ def research():
 
     if userinput == 0:
         # BUG x 2
+        # Why won't you open bud!
         url = "https://en.wikipedia.org/wiki/"+topic
         webbrowser.open(url, new=2)
     elif userinput == 1:
         research()
 
 def enchantee(user,assist):
-    current = "Hello. Welcome to ALFRED, a personal assistant application. To begin, let's set up your user configuration."
+    current = "Hello. Welcome to your personal assistant application. To begin, let's set up your user configuration."
     doNotLetHimSpeak(current)
 
     changePersonalName(user)
@@ -756,7 +738,7 @@ def mainMenu(user,assist):
 # 4.0 EXECUTION
 
 #--------------------------------------------------------------------------
-"""
+
 # Startup
 
 # Grab settings
@@ -769,8 +751,7 @@ theAssistant = Assistant(a_name, a_bool)
 # check if first-time user
 if a_bool == "False":
     enchantee(theUser,theAssistant)
-#else:
-    #startup(theUser)
+else:
+    startup(theUser)
 
 mainMenu(theUser,theAssistant)
-"""
