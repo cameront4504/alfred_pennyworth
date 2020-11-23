@@ -63,6 +63,7 @@
 #           + dailyTrackerNewTracker: Lets user append new tracker to settings.txt
 #           + dailyTrackerAddEntry: Lets user add dated entry to an existing tracker
 #             (Ex: November 20: Marked Yes for Doing the Dishes)
+#           + dailyTrackerViewAll: Lets user select a tracker and view all entries for it
 #       - recommendations:
 #       - research: Lets user look up stuff via wikipedia library
 #
@@ -578,7 +579,7 @@ def dailyTrackers():
         0. Create a new tracker
         1. Create an entry for an existing tracker
         2. Edit an entry for an existing tracker (WIP)
-        3. View all entries for an existing tracker (WIP)
+        3. View all entries for an existing tracker
     """))
 
     if userinput == 0:
@@ -749,7 +750,7 @@ theUser = User(name,nickname)
 theAssistant = Assistant(a_name, a_bool)
 
 # check if first-time user
-if a_bool == "False":
+if theAssistant.status == "False":
     enchantee(theUser,theAssistant)
 else:
     startup(theUser)
