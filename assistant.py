@@ -15,21 +15,21 @@
                     [ ] By Genre
                     [ ] By Mood
             [ ] Research
-                    [ ] BUG: What to do if page lookup fails
+                    [ ] BUG-ish: What to do if page lookup fails
                     [ ] BUG: Why does browser not open sometimes
             [ ] Games & Entertainment
             [x] Assistant Remembering User if interacted before
             [x] Settings JSON
             [x] Change Settings Functions
         - Cleanup / Streamlining
-            [x] JSON reading and writing?
-            [ ] User Input (Have checkUserInput that accepts options parameter; use array of options to print(?))
-            [ ] Creating local variables for dialogue / printing (what is spoken and printed)
-            [] Create speech function
+            [x] JSON reading and writing
+            [x] Create speech function
                     [x] assistantSpeech(current):
                             engine.say(current)
                             engine.runAndWait()
                     [x] Go through functions and update with it
+            [ ] createMenu: Function that takes options variable and uses it to create input?
+                    [ ] Adapt current functions/menus
 
 
 """
@@ -58,28 +58,29 @@
 #       Main Functions //
 #
 #       - mainMenu: Main menu of sorts, grants access to app's primary functions
-#       - recordKeeping
-#       - dailyTracker: Bullet Journal -esque system
-#           + dailyTrackerNewTracker: Lets user append new tracker to settings.txt
-#           + dailyTrackerAddEntry: Lets user add dated entry to an existing tracker
-#             (Ex: November 20: Marked Yes for Doing the Dishes)
-#           + dailyTrackerViewAll: Lets user select a tracker and view all entries for it
-#       - recommendations:
+#       - recordKeeping: Encompasses group of functions below (WIP)
+#               - dailyTracker: Bullet Journal -esque system
+#                    + dailyTrackerNewTracker: Lets user append new tracker to settings.json
+#                    + dailyTrackerAddEntry: Lets user add dated entry to an existing tracker
+#                    + dailyTrackerViewAll: Lets user select a tracker and view all entries for it
+#               - tasteTracker: Allows user to enter some values for daily interests
+#       - recommendations: (WIP)
 #       - research: Lets user look up stuff via wikipedia library
 #
 #       Settings //
 #
-#       - updateSettings: Writes any changes to settings.txt via JSON
+#       - grabSettings: Gets some values from settings.json ()
+#       - updateSettings: Writes any changes to settings.json via JSON
 #       - changeAssistantMenu: Features all stuff below
 #           + changeAssistVoice: Change assistant's voice
 #           + changeAssistName: Change assistant's name
 #       - changePersonalMenu: Features all stuff below; update user information
 #           + changeName: Change user's name and/or nickname
 #
-#       Other Stuff
+#       Other Stuff //
 #
-#       - Housekeeping Stuff
-#       - Cut Content: Birthdays, Looking Ahead
+#       - doNotLetHimSpeak: Function that accepts a dialogue value and uses it to have assist talk
+#         (cuts down on how many lines are written)
 #
 # 3.0 BUILDING GUI (WIP)
 #
@@ -133,6 +134,15 @@ def doNotLetHimSpeak(currentDialogue):
     engine.say(currentDialogue)
     engine.runAndWait()
 
+def createMenu(menu):
+    # Not huge difference, but takes options from other place and uses it to make a menu
+    # Spits out user input for local function use
+
+    userinput = -1
+    userinput = int(input(menu))
+
+    return userinput
+
 def andNowTheWeather():
     # Get JSON from openweathermap.org and create an object using data
     # Formatted as: Temp, Description
@@ -183,7 +193,7 @@ def grabSettings():
     # By doing so, it allows the user to customize the application itself
 
     # Get JSON from settings file, remembering user preferences
-    with open('settings.txt') as json_file:
+    with open('settings.json') as json_file:
         data = json.load(json_file)
         for d in data['user']:
             name = d['name']
@@ -198,9 +208,9 @@ def grabSettings():
     return name, nickname, a_name, a_bool
 
 def updateSettings(updateWhat,changedValue,newValue):
-    # Handles all changes to settings.txt JSON
-    # First, open settings.txt and create a data from the readings
-    with open('settings.txt') as json_file:
+    # Handles all changes to settings.json JSON
+    # First, open settings.json and create a data from the readings
+    with open('settings.json') as json_file:
         data = json.load(json_file)
 
         # IF FIRST TIME USER
@@ -232,15 +242,9 @@ def updateSettings(updateWhat,changedValue,newValue):
                 "entries": []
                 }
             data['trackers'].append(newTracker)
-        
-        # IF A TRACKER ENTRY WAS ADDED
-        # this works if new tracker, but what about old ones?
-        if changedValue == "trackerEntry":
-            id = int(data['trackers'][-1]['id'])
-            data['trackers'][id]['entries'].append(newValue)
 
-    # WRITE TO SETTINGS.TXT     
-    with open('settings.txt', 'w') as json_file:
+    # WRITE TO settings.json     
+    with open('settings.json', 'w') as json_file:
             json_file.write(json.dumps(data,indent=4))
 
 def changeAssistVoice():
@@ -251,8 +255,7 @@ def changeAssistVoice():
         print(str(option)+". "+ voice.name)
         option += 1
 
-    current = "These are the current voices on your machine:"
-    doNotLetHimSpeak(current)
+    doNotLetHimSpeak("These are the current voices on your machine:")
 
      # keep looping through test until user selects voice
     # reset variables to use as bools, in a sense
@@ -272,9 +275,7 @@ def changeAssistVoice():
         doNotLetHimSpeak(current)
         userinput = input(current+" [y/n]")
         
-    # vocal confirmation
-    current = "Voice confirmed."
-    doNotLetHimSpeak(current)
+    doNotLetHimSpeak("Voice confirmed.")
 
     # update settings
     updateWhat = "assistant"
@@ -314,10 +315,11 @@ def changeAssistantMenu(assist):
     doNotLetHimSpeak(current)
     print(current)
 
-    userinput = int(input("""
+    options = """
         0. Rename Assistant
         1. Change Assistant Voice
-    """))
+    """
+    userinput = createMenu(options)
 
     if userinput == 0:
         changeAssistName(assist)
@@ -332,7 +334,7 @@ def changePersonalName(user):
     userinput = 0
     # Until a proper string is entered, ask for input
     while isinstance(newName, str) == False:
-        newName = input("What would you prefer to be called?")
+        newName = input(current)
 
     while userinput != "y":
         current = "You've entered "+newName+". Is that correct?"
@@ -380,8 +382,7 @@ def changePersonalName(user):
     updateSettings(updateWhat,changedValue,newValue)
 
 def changePersonalMenu(user):
-    current = "Here are your options. What would you like to change?"
-    doNotLetHimSpeak(current)
+    doNotLetHimSpeak("Here are your options. What would you like to change?")
 
     userinput = int(input("""
         0. Change Name And/Or Nickname
@@ -391,21 +392,20 @@ def changePersonalMenu(user):
     if userinput == 0:
         changePersonalName()
     elif userinput == 1:
-        print("something")
+        print("wippppp")
     else:
-        print("bye")
+        print("exited")
 
 def recordKeeping():
-    current = "What would you like to check?"
-    doNotLetHimSpeak(current)
+    doNotLetHimSpeak("What would you like to check?")
 
-    userinput = -1
-    userinput = int(input("""
+    options = """
         0. Budgeting (WIP)
         1. Scheduling (WIP)
         2. Daily Task Trackers
         3. Current Taste Trackers (WIP)
-    """))
+    """
+    userinput = createMenu(options)
 
     if userinput == 0:
         print("budgeting")
@@ -416,13 +416,12 @@ def recordKeeping():
     elif userinput == 3:
         tasteTracker()
     else:
-        current = "Back to work then."
-        doNotLetHimSpeak(current)
+        doNotLetHimSpeak("Back to work then.")
 
 def updateTrackers(tracker,entry):
-    # Similar to updateSettings, but trackers.txt
+    # Similar to updateSettings, but trackers.json
     # I want to keep most of the JSON affecting stuff together if I can
-    with open('trackers.txt') as json_file:
+    with open('trackers.json') as json_file:
         data = json.load(json_file)
 
         checkExists = False
@@ -454,8 +453,8 @@ def updateTrackers(tracker,entry):
             id = int(data['trackers'][-1]['id'])
             data['trackers'][id]['entries'].append(entry)
 
-    # WRITE TO TRACKERS.TXT     
-    with open('trackers.txt', 'w') as json_file:
+    # WRITE TO trackers.json     
+    with open('trackers.json', 'w') as json_file:
             json_file.write(json.dumps(data,indent=4))
 
 def dailyTrackerAddEntry():
@@ -464,7 +463,7 @@ def dailyTrackerAddEntry():
     doNotLetHimSpeak(current)
     print(current)
 
-    with open('trackers.txt') as json_file:
+    with open('trackers.json') as json_file:
         data = json.load(json_file)
         for d in data['trackers']:
             print(d['id'] +". "+ d['name'])
@@ -507,7 +506,7 @@ def dailyTrackerNewTracker():
             doNotLetHimSpeak(current)   
             newTracker = input(current)
 
-    # Send new Tracker to settings.txt for update/append
+    # Send new Tracker to settings.json for update/append
     # Second value is boogey, basically
     updateTrackers(newTracker,newTracker)
 
@@ -541,7 +540,7 @@ def dailyTrackersViewAll():
     doNotLetHimSpeak(current)
     print(current+"\n")
 
-    with open('trackers.txt') as json_file:
+    with open('trackers.json') as json_file:
         data = json.load(json_file)
         for d in data['trackers']:
             print(d['id'] +". "+ d['name'])
@@ -573,13 +572,13 @@ def dailyTrackers():
     doNotLetHimSpeak(current)
     print(current)
 
-    userinput = -1
-    userinput = int(input("""
+    options = """
         0. Create a new tracker
         1. Create an entry for an existing tracker
         2. Edit an entry for an existing tracker (WIP)
         3. View all entries for an existing tracker
-    """))
+    """
+    userinput = createMenu(options)
 
     if userinput == 0:
         dailyTrackerNewTracker()
@@ -590,8 +589,7 @@ def dailyTrackers():
     elif userinput == 3:
         print("view all entries")
     else:
-        current = "Back to work then."
-        doNotLetHimSpeak(current)
+        doNotLetHimSpeak("Back to work then.")
 
 # WIP ----------------------------------------------------------------------------------------------------------
 
@@ -601,13 +599,14 @@ def tasteTracker():
     #    Listening to, playing, watching, eating, quote of the day
     print("Taste Tracker")
 
-#def birthdays():
+def birthdays():
     # section to add birthdays or edit current entries
 
     # update my birthday
     # add a birthday for someone else
     # edit an entry (need in case date wrong?)
     # delete an entry oof ouchies
+    print("Birthdays")
 
 def recommendations():
     # section to get a song recommendation
@@ -631,11 +630,12 @@ def research():
     doNotLetHimSpeak(current)
     print(current)
 
-    userinput = -1
-    userinput = input("""
+    options = ("""
         0. Open Page in Browser
         1. Lookup Something Else
-        2. Finish Research""")
+        2. Finish Research
+    """)
+    userinput = createMenu(options)
 
     if userinput == 0:
         # BUG x 2
@@ -648,17 +648,13 @@ def research():
 def enchantee(user,assist):
     current = "Hello. Welcome to your personal assistant application. To begin, let's set up your user configuration."
     doNotLetHimSpeak(current)
-
     changePersonalName(user)
 
     current = "Now, let's set up a profile for your assistant."
     doNotLetHimSpeak(current)
-
     changeAssistVoice()
-
     current = "How about a name?"
     doNotLetHimSpeak(current)
-
     changeAssistName(assist)
 
     current = "I'm pleased to meet you "+user.name
@@ -690,19 +686,19 @@ def mainMenu(user,assist):
     doNotLetHimSpeak(current)
     print(current)
 
-    userinput = -1
-    userinput = int(input("""
+    options = """
         0. Recordkeeping
         1. Recommendations (WIP)
         2. Research & Information
         3. Manage Personal Settings
         4. Manage Assistant Settings
-    """))
+    """
+    userinput = createMenu(options)
 
     if userinput == 0:
         recordKeeping()
     elif userinput == 1:
-        print("recommendations")
+        recommendations()
     elif userinput == 2:
         research()
     elif userinput == 3:
@@ -710,8 +706,7 @@ def mainMenu(user,assist):
     elif userinput == 4:
         changeAssistantMenu(assist)
     else:
-        current = "Back to work then."
-        doNotLetHimSpeak(current)
+        doNotLetHimSpeak("Back to work then.")
 
 #--------------------------------------------------------------------------
 
@@ -751,7 +746,7 @@ theAssistant = Assistant(a_name, a_bool)
 # check if first-time user
 if theAssistant.status == "False":
     enchantee(theUser,theAssistant)
-else:
-    startup(theUser)
+#else:
+#    startup(theUser)
 
 mainMenu(theUser,theAssistant)
