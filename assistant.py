@@ -279,7 +279,7 @@ def resetPrompt(user):
     if userinput == "y":
         current = "Please enter your name to confirm."
         doNotLetHimSpeak(current,False)
-        userinput = input(current + " (Your name is currently "+user.name+".)")
+        userinput = input(current + " (Your name is currently stored as "+user.name+".)")
 
         if userinput == user.name:
             resetSettings()
@@ -469,7 +469,7 @@ def updateTrackers(tracker,entry):
         # Iterate over data to see if value exists, ignore case
         for d in data['trackers']:
             if d['name'].lower() == tracker.lower():
-                id = d['id']
+                id = int(d['id'])
                 checkExists = False
                 break
             else:
@@ -485,10 +485,7 @@ def updateTrackers(tracker,entry):
                 "entries": []
                 }
             data['trackers'].append(newTracker)
-        
-        # IF ENTRY WAS ADDED
-        if tracker != entry:
-            id = int(data['trackers'][-1]['id'])
+        else:
             data['trackers'][id]['entries'].append(entry)
 
     # WRITE TO userdata.json     
@@ -503,28 +500,27 @@ def dailyTrackerAddEntry():
     with open('userdata.json') as json_file:
         data = json.load(json_file)
         for d in data['trackers']:
-            print(d['id'] +". "+ d['name'])
+            print("""        """+
+            d['id'] +". "+ d['name']+""" """)
 
         current = "Which would you like to add an entry for?"
         doNotLetHimSpeak(current,False)
         userinput = int(input(current))
 
         tracker = data['trackers'][userinput]['name']
-        current = "You've selected "+tracker+". Is that correct?"
-        doNotLetHimSpeak(current,False)
-        userinput = input(current+" [y/n]")
+        d,_ = timeIsAConstruct()
+        dateFormatted = d.strftime("%m_%d_%Y")
 
-        if userinput == "y":
-            d,_ = timeIsAConstruct()
-            dateFormatted = d.strftime("%m_%d_%Y")
+        current = "Do you want to mark today's entry for complete or incomplete?"
+        doNotLetHimSpeak(current,False)           
+        entry = int(input(current+" [1/0]"))
 
-            current = "Do you want to mark today's entry for complete or incomplete?"
-            doNotLetHimSpeak(current,False)           
-            entry = input(current+" [1/0]")
+        current = "Entry marked."
+        doNotLetHimSpeak(current, True)
 
-            newEntry = dateFormatted+": "+entry
-            newValue = newEntry
-            updateTrackers(tracker,newEntry)
+        newEntry = dateFormatted+": "+str(entry)
+        newValue = newEntry
+        updateTrackers(tracker,newEntry)
 
 def dailyTrackerNewTracker():
     newTracker = 0
@@ -706,11 +702,11 @@ def startup(user):
 
     # Assistant greets User
     greeting = butObeyWeMust()
-    current = greeting+" "+user.name
+    current = greeting+" "+user.name+"."
     doNotLetHimSpeak(current,True)
 
     # Assistant discusses the weather
-    current = "It is currently " +str(temp) + "degrees in North Orlando."
+    current = "It is currently " +str(temp) + " degrees in North Orlando."
     doNotLetHimSpeak(current,True)
 
 def mainMenu(user,assist):
@@ -780,6 +776,7 @@ theUser = User(name,nickname)
 theAssistant = Assistant(a_name, a_bool)
 
 # check if first-time user
+
 if theAssistant.status == "False":
     enchantee(theUser,theAssistant)
 else:
