@@ -128,9 +128,10 @@ class Assistant(object):
 
 #--------------------------------------------------------------------------
 
-def doNotLetHimSpeak(currentDialogue):
-    # Said Aragorn, but it's Gandalf, ya dingus
-    # Tiny function, but it helps condense four-five lines into two, generally
+def doNotLetHimSpeak(currentDialogue,printcheck):
+    # IF followed by input, don't print
+    if printcheck == True:
+        print(currentDialogue)
     engine.say(currentDialogue)
     engine.runAndWait()
 
@@ -247,7 +248,46 @@ def updateSettings(updateWhat,changedValue,newValue):
     with open('settings.json', 'w') as json_file:
             json_file.write(json.dumps(data,indent=4))
 
+def resetSettings():
+    # Reset application to beginning state
+    # Clear trackers, reset hasMet, etc.
+    print("delete")
+
+    # Reset settings.json
+    with open('settings.json') as json_file:
+        data = json.load(json_file)
+
+        data['user'][0]['name'] = "Damian"
+        data['user'][0]['nickname'] = "Daymi"
+        data['assistant'][0]['name'] = "Alfred"
+        data['assistant'][0]['hasMet'] = "False"
+
+
+    with open('settings.json', 'w') as json_file:
+            json_file.write(json.dumps(data,indent=4))
+
+def resetPrompt(user):
+    current = "You have selected to reset the application."
+    doNotLetHimSpeak(current,True)
+    current = "This will reset your assistant, clear your user settings, and delete any stored data."
+    doNotLetHimSpeak(current,True)
+
+    current = "Is that ok?"
+    doNotLetHimSpeak(current,False)
+    userinput = input(current + "[y/n]")
+
+    if userinput == "y":
+        current = "Please enter your name to confirm."
+        doNotLetHimSpeak(current,False)
+        userinput = input(current + " (Your name is currently "+user.name+".)")
+
+        if userinput == user.name:
+            resetSettings()
+
 def changeAssistVoice():
+    doNotLetHimSpeak("These are the current voices on your machine:",True)
+    print("\n")
+
     # List current voices on machine
     # Preprend number for user to select, if they decide to change it
     option = 0
@@ -255,15 +295,13 @@ def changeAssistVoice():
         print(str(option)+". "+ voice.name)
         option += 1
 
-    doNotLetHimSpeak("These are the current voices on your machine:")
-
      # keep looping through test until user selects voice
     # reset variables to use as bools, in a sense
     userinput = 0
     newVoice = 0
     while userinput != "y":
         current = "Which voice would you like?"
-        doNotLetHimSpeak(current)
+        doNotLetHimSpeak(current,False)
             
         # Grab user input and test voice
         newVoice = int(input(current))
@@ -272,10 +310,10 @@ def changeAssistVoice():
 
         # test for feedback
         current = "This is how it sounds, is that alright?"
-        doNotLetHimSpeak(current)
+        doNotLetHimSpeak(current,False)
         userinput = input(current+" [y/n]")
         
-    doNotLetHimSpeak("Voice confirmed.")
+    doNotLetHimSpeak("Voice confirmed.",True)
 
     # update settings
     updateWhat = "assistant"
@@ -284,8 +322,10 @@ def changeAssistVoice():
     updateSettings(updateWhat,changedValue,newValue)
 
 def changeAssistName(assist):
-    current = "I'm currently called " + assist.name+ ". What would you like to call me?"
-    doNotLetHimSpeak(current)
+    current = "I'm currently called " + assist.name+ "."
+    doNotLetHimSpeak(current,True)
+    current= "What would you like to call me?"
+    doNotLetHimSpeak(current,False)
     assistName = 0
     userinput = 0
     # Until a proper string is entered, ask for input
@@ -294,16 +334,16 @@ def changeAssistName(assist):
 
     while userinput != "y":
         current = "You've entered "+assistName+". Is that correct?"
-        doNotLetHimSpeak(current)
+        doNotLetHimSpeak(current,False)
         userinput = input(current+" [y/n]")
         if userinput == "n":
             current = "I must have misheard. What would you prefer?"
-            doNotLetHimSpeak(current)
+            doNotLetHimSpeak(current,False)
             assistName = input(current)
 
     # set new details and send to updateSettings
-    current = assistName+" it is."
-    doNotLetHimSpeak(current)
+    current = assistName+", it is."
+    doNotLetHimSpeak(current,True)
 
     updateWhat = "assistant"
     changedValue = "name"
@@ -312,8 +352,7 @@ def changeAssistName(assist):
 
 def changeAssistantMenu(assist):
     current = "Here are your options. What would you like to change?"
-    doNotLetHimSpeak(current)
-    print(current)
+    doNotLetHimSpeak(current,True)
 
     options = """
         0. Rename Assistant
@@ -328,7 +367,7 @@ def changeAssistantMenu(assist):
 
 def changePersonalName(user):
     current = "What would you prefer to be called?"
-    doNotLetHimSpeak(current)
+    doNotLetHimSpeak(current,False)
 
     newName = 0
     userinput = 0
@@ -338,40 +377,39 @@ def changePersonalName(user):
 
     while userinput != "y":
         current = "You've entered "+newName+". Is that correct?"
-        doNotLetHimSpeak(current)
+        doNotLetHimSpeak(current,False)
         userinput = input(current+" [y/n]")
         if userinput == "n":
             current = "I must have misheard. What would you prefer?"
-            engine.say(current)
-            engine.runAndWait()
+            doNotLetHimSpeak(current,False)
             newName = input(current)
 
     # set new details and send to updateSettings
+    user.name = newName
     updateWhat = "user"
     changedValue = "name"
     newValue = newName
     updateSettings(updateWhat,changedValue,newValue)
 
     # ask if user wants a nickname
-    current = newName+" it is. Would you like to have a nickname?"
-    doNotLetHimSpeak(current)
+    current = newName+", it is. Would you like to have a nickname?"
+    doNotLetHimSpeak(current,False)
     nickname = 0
-    userinput = input(current)
+    userinput = input(current + "[y/n]")
     if userinput == "y":
         current = "What nickname would you like?"
-        doNotLetHimSpeak(current)
+        doNotLetHimSpeak(current,False)
         while isinstance(nickname, str) == False:
             nickname = input(current)
 
         userinput = 0
         while userinput != "y":
             current = "You've entered "+nickname+". Is that correct?"
-            doNotLetHimSpeak(current)
+            doNotLetHimSpeak(current,False)
             userinput = input(current+" [y/n]")
             if userinput == "n":
                 current = "I must have misheard. What would you prefer?"
-                engine.say(current)
-                engine.runAndWait()
+                doNotLetHimSpeak(current,False)
                 nickname = input(current)
     else:
         nickname = user.name
@@ -382,7 +420,7 @@ def changePersonalName(user):
     updateSettings(updateWhat,changedValue,newValue)
 
 def changePersonalMenu(user):
-    doNotLetHimSpeak("Here are your options. What would you like to change?")
+    doNotLetHimSpeak("Here are your options. What would you like to change?",True)
 
     userinput = int(input("""
         0. Change Name And/Or Nickname
@@ -397,7 +435,7 @@ def changePersonalMenu(user):
         print("exited")
 
 def recordKeeping():
-    doNotLetHimSpeak("What would you like to check?")
+    doNotLetHimSpeak("What would you like to check?",True)
 
     options = """
         0. Budgeting (WIP)
@@ -416,12 +454,12 @@ def recordKeeping():
     elif userinput == 3:
         tasteTracker()
     else:
-        doNotLetHimSpeak("Back to work then.")
+        doNotLetHimSpeak("Back to work then.",True)
 
 def updateTrackers(tracker,entry):
-    # Similar to updateSettings, but trackers.json
+    # Similar to updateSettings, but userdata.json
     # I want to keep most of the JSON affecting stuff together if I can
-    with open('trackers.json') as json_file:
+    with open('userdata.json') as json_file:
         data = json.load(json_file)
 
         checkExists = False
@@ -453,28 +491,27 @@ def updateTrackers(tracker,entry):
             id = int(data['trackers'][-1]['id'])
             data['trackers'][id]['entries'].append(entry)
 
-    # WRITE TO trackers.json     
-    with open('trackers.json', 'w') as json_file:
+    # WRITE TO userdata.json     
+    with open('userdata.json', 'w') as json_file:
             json_file.write(json.dumps(data,indent=4))
 
 def dailyTrackerAddEntry():
     # Display current Trackers by ID
     current = "These are your current Trackers:"
-    doNotLetHimSpeak(current)
-    print(current)
+    doNotLetHimSpeak(current,True)
 
-    with open('trackers.json') as json_file:
+    with open('userdata.json') as json_file:
         data = json.load(json_file)
         for d in data['trackers']:
             print(d['id'] +". "+ d['name'])
 
         current = "Which would you like to add an entry for?"
-        doNotLetHimSpeak(current)
+        doNotLetHimSpeak(current,False)
         userinput = int(input(current))
 
         tracker = data['trackers'][userinput]['name']
         current = "You've selected "+tracker+". Is that correct?"
-        doNotLetHimSpeak(current)
+        doNotLetHimSpeak(current,False)
         userinput = input(current+" [y/n]")
 
         if userinput == "y":
@@ -482,7 +519,7 @@ def dailyTrackerAddEntry():
             dateFormatted = d.strftime("%m_%d_%Y")
 
             current = "Do you want to mark today's entry for complete or incomplete?"
-            doNotLetHimSpeak(current)           
+            doNotLetHimSpeak(current,False)           
             entry = input(current+" [1/0]")
 
             newEntry = dateFormatted+": "+entry
@@ -492,18 +529,18 @@ def dailyTrackerAddEntry():
 def dailyTrackerNewTracker():
     newTracker = 0
     current = "What would you like to call this tracker?"
-    doNotLetHimSpeak(current)
+    doNotLetHimSpeak(current,False)
     while isinstance(newTracker, str) == False:
         newTracker = input(current)
 
     userinput = 0
     current = "You've entered "+newTracker+". Is that correct?"
     while userinput != "y":
-        doNotLetHimSpeak(current)   
+        doNotLetHimSpeak(current,False)
         userinput = input(current+" [y/n]")
         if userinput == "n":
             current = "I must have misheard. What would you like to call this tracker?"
-            doNotLetHimSpeak(current)   
+            doNotLetHimSpeak(current,False) 
             newTracker = input(current)
 
     # Send new Tracker to settings.json for update/append
@@ -514,7 +551,7 @@ def dailyTrackerNewTracker():
     # if so, switch to dailyTrackerAddEntry
     userinput = 0
     current = "Would you like to add an entry for this tracker today?"
-    doNotLetHimSpeak(current)
+    doNotLetHimSpeak(current,False)
     userinput = input(current+" [y/n]")
 
     if userinput == "y":
@@ -523,7 +560,7 @@ def dailyTrackerNewTracker():
         dateFormatted = d.strftime("%m_%d_%Y")
         
         current = "Do you want to mark today's entry for complete or incomplete?"
-        doNotLetHimSpeak(current)
+        doNotLetHimSpeak(current,False)
         entry = input(current+" [1/0]")
 
         newEntry = dateFormatted+": "+entry
@@ -531,22 +568,21 @@ def dailyTrackerNewTracker():
         updateTrackers(newTracker,newEntry)
 
         current = "Tracker updated."
-        doNotLetHimSpeak(current)
-        print(current)
+        doNotLetHimSpeak(current,True)
 
 def dailyTrackersViewAll():
     # Display current Trackers by ID
     current = "These are your current Trackers:"
-    doNotLetHimSpeak(current)
-    print(current+"\n")
+    doNotLetHimSpeak(current,True)
+    print("\n")
 
-    with open('trackers.json') as json_file:
+    with open('userdata.json') as json_file:
         data = json.load(json_file)
         for d in data['trackers']:
             print(d['id'] +". "+ d['name'])
 
         current = "For which would you like to view the entries?"
-        doNotLetHimSpeak(current)
+        doNotLetHimSpeak(current,False)
         userinput = int(input("\n"+current+"\n"))
 
         # Grab all entries and split by date and status (complete/incomplete)
@@ -569,8 +605,7 @@ def dailyTrackers():
     # Ex: did dishes today, drank enough water, did SOME homework at least
 
     current = "These are a few of the things you can do."
-    doNotLetHimSpeak(current)
-    print(current)
+    doNotLetHimSpeak(current,True)
 
     options = """
         0. Create a new tracker
@@ -589,7 +624,7 @@ def dailyTrackers():
     elif userinput == 3:
         print("view all entries")
     else:
-        doNotLetHimSpeak("Back to work then.")
+        doNotLetHimSpeak("Back to work then.",True)
 
 # WIP ----------------------------------------------------------------------------------------------------------
 
@@ -617,18 +652,17 @@ def recommendations():
 
 def research():
     current = "What would you like to research?"
-    doNotLetHimSpeak(current)
+    doNotLetHimSpeak(current,False)
 
     # get input and then search using Wikipedia API, limit 2 sentences
     # print first because this'll probably take a bit for talks
     topic = input (current)
     print(wikipedia.summary(topic, sentences=2))
     current = "According to Wikipedia: "+wikipedia.summary(topic, sentences=2)
-    doNotLetHimSpeak(current)
+    doNotLetHimSpeak(current,False)
 
     current = "Does that answer your questions? Otherwise, here are some other options."
-    doNotLetHimSpeak(current)
-    print(current)
+    doNotLetHimSpeak(current,True)
 
     options = ("""
         0. Open Page in Browser
@@ -647,18 +681,18 @@ def research():
 
 def enchantee(user,assist):
     current = "Hello. Welcome to your personal assistant application. To begin, let's set up your user configuration."
-    doNotLetHimSpeak(current)
+    doNotLetHimSpeak(current,True)
     changePersonalName(user)
 
     current = "Now, let's set up a profile for your assistant."
-    doNotLetHimSpeak(current)
+    doNotLetHimSpeak(current,True)
     changeAssistVoice()
     current = "How about a name?"
-    doNotLetHimSpeak(current)
+    doNotLetHimSpeak(current,True)
     changeAssistName(assist)
 
-    current = "I'm pleased to meet you "+user.name
-    doNotLetHimSpeak(current)
+    current = "I'm pleased to meet you "+user.name+"."
+    doNotLetHimSpeak(current,True)
 
     # Set hasMet status to True
     updateWhat = "assistant"
@@ -673,18 +707,17 @@ def startup(user):
     # Assistant greets User
     greeting = butObeyWeMust()
     current = greeting+" "+user.name
-    doNotLetHimSpeak(current)
+    doNotLetHimSpeak(current,True)
 
     # Assistant discusses the weather
     current = "It is currently " +str(temp) + "degrees in North Orlando."
-    doNotLetHimSpeak(current)
+    doNotLetHimSpeak(current,True)
 
 def mainMenu(user,assist):
     # Main menu that launches after startup
     # Links to all other functions/menus/etc
     current = "What can I help you with?"
-    doNotLetHimSpeak(current)
-    print(current)
+    doNotLetHimSpeak(current,True)
 
     options = """
         0. Recordkeeping
@@ -692,6 +725,7 @@ def mainMenu(user,assist):
         2. Research & Information
         3. Manage Personal Settings
         4. Manage Assistant Settings
+        5. Reset Application
     """
     userinput = createMenu(options)
 
@@ -705,8 +739,10 @@ def mainMenu(user,assist):
         changePersonalMenu(user)
     elif userinput == 4:
         changeAssistantMenu(assist)
+    elif userinput == 5:
+        resetPrompt(user)
     else:
-        doNotLetHimSpeak("Back to work then.")
+        doNotLetHimSpeak("Back to work then.",True)
 
 #--------------------------------------------------------------------------
 
@@ -746,7 +782,7 @@ theAssistant = Assistant(a_name, a_bool)
 # check if first-time user
 if theAssistant.status == "False":
     enchantee(theUser,theAssistant)
-#else:
-#    startup(theUser)
+else:
+    startup(theUser)
 
 mainMenu(theUser,theAssistant)
