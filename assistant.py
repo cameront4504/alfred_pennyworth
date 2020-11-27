@@ -187,6 +187,7 @@ def butObeyWeMust():
             timeGreeting = "Good Evening"
         elif currentHour >= 8 and currentHour <= 11:
             timeGreeting = "Late tidings"
+    print(currentHour)
     return timeGreeting
 
 def grabSettings():
@@ -441,7 +442,7 @@ def recordKeeping():
         0. Budgeting (WIP)
         1. Scheduling (WIP)
         2. Daily Task Trackers
-        3. Current Taste Trackers (WIP)
+        3. Taste Tracking
     """
     userinput = createMenu(options)
 
@@ -624,11 +625,12 @@ def dailyTrackers():
 
 # WIP ----------------------------------------------------------------------------------------------------------
 
+
 def tasteTracker():
     # Inspired by those silly updates on deviantArt
     # (CURRENTLY) What have you been up to:
     #    Listening to, playing, watching, eating, quote of the day
-    print("Taste Tracker")
+    print("Tastes")
 
 def birthdays():
     # section to add birthdays or edit current entries
@@ -722,6 +724,8 @@ def mainMenu(user,assist):
         3. Manage Personal Settings
         4. Manage Assistant Settings
         5. Reset Application
+
+        Exit with any other key.
     """
     userinput = createMenu(options)
 
