@@ -11,9 +11,13 @@
                     [x] Habits
                     [ ] Budgeting
                     [ ] Taste Tracker
-            [ ] Recommendations
-                    [ ] By Genre
-                    [ ] By Mood
+            [ ] Entertainment
+                    [ ] Games & Such
+                            [ ] Rock, Paper, Scissors
+                            [ ] Upgraded Hangman(?)
+                    [ ] Recommendations
+                            [ ] By Genre
+                            [ ] By Mood
             [ ] Research
                     [ ] BUG-ish: What to do if page lookup fails
                     [ ] BUG: Why does browser not open sometimes
@@ -28,9 +32,8 @@
                             engine.say(current)
                             engine.runAndWait()
                     [x] Go through functions and update with it
-            [ ] createMenu: Function that takes options variable and uses it to create input?
-                    [ ] Adapt current functions/menus
-
+            [x] createMenu: Function that takes options variable and uses it to create input?
+                    [x] Adapt current functions/menus
 
 """
 
@@ -71,6 +74,8 @@
 #
 #       - grabSettings: Gets some values from settings.json ()
 #       - updateSettings: Writes any changes to settings.json via JSON
+#       - resetPrompt: Leads to next function
+#           + resetSettings: Reset program and any user data
 #       - changeAssistantMenu: Features all stuff below
 #           + changeAssistVoice: Change assistant's voice
 #           + changeAssistName: Change assistant's name
@@ -96,6 +101,7 @@
 
 # The Basics
 import json
+import random
 from datetime import date, datetime
 
 # API and Web browser related
@@ -118,9 +124,10 @@ class User(object):
         self.nickname = nickname
 
 class Assistant(object):
-    def __init__(self,name,status):
+    def __init__(self,name,status, personality):
         self.name = name
         self.status = status
+        self.personality = personality
 
 #--------------------------------------------------------------------------
 
@@ -187,7 +194,6 @@ def butObeyWeMust():
             timeGreeting = "Good Evening"
         elif currentHour >= 8 and currentHour <= 11:
             timeGreeting = "Late tidings"
-    print(currentHour)
     return timeGreeting
 
 def grabSettings():
@@ -204,10 +210,11 @@ def grabSettings():
             voice = d['id']
             a_name = d['name']
             a_bool = d['hasMet']
+            a_per = d['personality']
     # Set voice from settings
     engine.setProperty('voice', voice)
     # return values for user class
-    return name, nickname, a_name, a_bool
+    return name, nickname, a_name, a_bool, a_per
 
 def updateSettings(updateWhat,changedValue,newValue):
     # Handles all changes to settings.json JSON
@@ -619,7 +626,7 @@ def dailyTrackers():
     elif userinput == 2:
         print("edit entry")
     elif userinput == 3:
-        print("view all entries")
+        dailyTrackersViewAll()
     else:
         doNotLetHimSpeak("Back to work then.",True)
 
@@ -640,11 +647,6 @@ def birthdays():
     # edit an entry (need in case date wrong?)
     # delete an entry oof ouchies
     print("Birthdays")
-
-def recommendations():
-    # section to get a song recommendation
-    # By genre, mood, or, if tastes have been updated, maybe compile some by genre???
-    print("Recommendations menu")
 
 # WIP ----------------------------------------------------------------------------------------------------------
 
@@ -676,6 +678,125 @@ def research():
         webbrowser.open(url, new=2)
     elif userinput == 1:
         research()
+
+def wiiWouldLikeToPlay():
+    # Ideally, the assistant would randomly grab one of several games to play.
+    # Realistically, I'm offering rock, paper, and scissors right now but that's boring so:
+
+    # Fire Emblem System
+
+    # Lance beats SWORD
+    # Sword beats AXES
+    # Axe beats LANCE
+
+    current = "Sure! Let's try a game of rock paper scissors. Of sorts."
+    doNotLetHimSpeak(current,True)
+
+    current = "Which would you prefer?"
+    doNotLetHimSpeak(current,True)
+
+    rounds = 3
+    roundsPlayed = 0
+    userPoints = 0
+    assistPoints = 0
+
+    while roundsPlayed < rounds:
+        roundsPlayed += 1
+        weapons = ["lance","axe","sword"]
+        assistattack = random.choice(weapons)
+        userattack = ""
+        options = """
+            0. A Sword
+            1. A Lance
+            2. An Axe
+        """
+        # Check play input
+        while (userattack != 0 and userattack != 1 and userattack != 2):
+            userattack = int(input(options))
+        
+        # Translate selection
+        if userattack == 0:
+            userattack = "sword"
+        elif userattack == 1:
+            userattack = "lance"
+        elif userattack == 2:
+            userattack = "axe"
+
+        feedback = ["Here are the results.","Here's how the battle progressed.","Here's how the round went."]
+        current = random.choice(feedback)
+        doNotLetHimSpeak(current,False)
+
+        # REVEAL MATCHUP
+        print("ROUND "+str(roundsPlayed)+" -----------------------------\n")
+        print("Your assistant brandishes their " + assistattack + "!")
+        print("You draw your " + userattack + "!\n")
+
+        # IF A TIE
+        if userattack == assistattack:
+            print("You're both standing still, evenly matched!")
+        # ELSE TALLY SCORES FOR JUDGEMENT
+        elif userattack == "lance" and assistattack == "sword":
+            userPoints += 1
+            print("Success! Your weapon has the advantage!")
+        elif userattack == "sword" and assistattack == "axe":
+            userPoints += 1
+            print("Success! Your weapon has the advantage!")
+        elif userattack == "axe" and assistattack == "lance":
+            userPoints += 1
+            print("Success! Your weapon has the advantage!")
+        else:
+            assistPoints += 1
+            print("A travesty! Your weapon is at a disadvantage!")
+        
+        if roundsPlayed != 3:
+            print("\nEND ROUND ----------------------------\n")
+            current = "Which would you prefer for Round "+str(roundsPlayed+1)+"?"
+            doNotLetHimSpeak(current,True)
+
+    # Check who won by comparing points
+    if userPoints > assistPoints:
+        winner = "user"
+    elif userPoints < assistPoints:
+        winner = "assistant"
+    else:
+        winner = "none"
+
+    # END MATCH
+    # Game End #1: Not Today
+    if winner == "user":
+        print("They battled fiercely, but you won!")
+        
+        current = "Fantastic sporting, Serah!"
+        doNotLetHimSpeak(current,True)
+    # Game End #2: Death Comes for All of Us
+    elif winner == "assistant":
+        print("You battled fiercely, but they won!")
+        
+        current = "Good luck next time, Serah."
+        doNotLetHimSpeak(current,True)
+    # Game End #4: New Best Buds
+    else:
+        print("A draw!\nYou sense your Assistant's budding respect--\nAnd you buy each other sangria. Or juice, if you prefer.""")
+
+        current = "Good show, Serah!"
+        doNotLetHimSpeak(current,True)
+
+def entertainmentMenu():
+    current = "What would you like to do?"
+    doNotLetHimSpeak(current,True)
+
+    options = """
+        0. Play a Game
+        1. Get a Recommendation (WIP)
+    """
+    userinput = createMenu(options)
+
+    if userinput == 0:
+        wiiWouldLikeToPlay()
+    elif userinput == 1:
+        print("recommendations")
+    else:
+        doNotLetHimSpeak("Back to work then.",True)
 
 def enchantee(user,assist):
     current = "Hello. Welcome to your personal assistant application. To begin, let's set up your user configuration."
@@ -719,8 +840,8 @@ def mainMenu(user,assist):
 
     options = """
         0. Recordkeeping
-        1. Recommendations (WIP)
-        2. Research & Information
+        1. Research & Information
+        2. Recommendations & Entertainment
         3. Manage Personal Settings
         4. Manage Assistant Settings
         5. Reset Application
@@ -732,9 +853,9 @@ def mainMenu(user,assist):
     if userinput == 0:
         recordKeeping()
     elif userinput == 1:
-        recommendations()
-    elif userinput == 2:
         research()
+    elif userinput == 2:
+        entertainmentMenu()
     elif userinput == 3:
         changePersonalMenu(user)
     elif userinput == 4:
@@ -773,11 +894,11 @@ def mainMenu(user,assist):
 # Startup
 
 # Grab settings
-name, nickname, a_name, a_bool = grabSettings()
+name, nickname, a_name, a_bool, a_per = grabSettings()
 
 # Create objects from classes
 theUser = User(name,nickname)
-theAssistant = Assistant(a_name, a_bool)
+theAssistant = Assistant(a_name, a_bool, a_per)
 
 # check if first-time user
 
