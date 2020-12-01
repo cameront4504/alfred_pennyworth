@@ -13,7 +13,7 @@
                     [ ] Taste Tracker
             [ ] Entertainment
                     [ ] Games & Such
-                            [ ] Rock, Paper, Scissors
+                            [x] Rock, Paper, Scissors
                             [ ] Upgraded Hangman(?)
                     [ ] Recommendations
                             [ ] By Genre
@@ -632,7 +632,6 @@ def dailyTrackers():
 
 # WIP ----------------------------------------------------------------------------------------------------------
 
-
 def tasteTracker():
     # Inspired by those silly updates on deviantArt
     # (CURRENTLY) What have you been up to:
@@ -832,39 +831,6 @@ def startup(user):
     current = "It is currently " +str(temp) + " degrees in North Orlando."
     doNotLetHimSpeak(current,True)
 
-def mainMenu(user,assist):
-    # Main menu that launches after startup
-    # Links to all other functions/menus/etc
-    current = "What can I help you with?"
-    doNotLetHimSpeak(current,True)
-
-    options = """
-        0. Recordkeeping
-        1. Research & Information
-        2. Recommendations & Entertainment
-        3. Manage Personal Settings
-        4. Manage Assistant Settings
-        5. Reset Application
-
-        Exit with any other key.
-    """
-    userinput = createMenu(options)
-
-    if userinput == 0:
-        recordKeeping()
-    elif userinput == 1:
-        research()
-    elif userinput == 2:
-        entertainmentMenu()
-    elif userinput == 3:
-        changePersonalMenu(user)
-    elif userinput == 4:
-        changeAssistantMenu(assist)
-    elif userinput == 5:
-        resetPrompt(user)
-    else:
-        doNotLetHimSpeak("Back to work then.",True)
-
 #--------------------------------------------------------------------------
 
 # 3.0 BUILDING GUI
@@ -883,7 +849,6 @@ def mainMenu(user,assist):
 #myButton.pack()
 
 #root.mainloop()
-
 
 #--------------------------------------------------------------------------
 
@@ -907,4 +872,35 @@ if theAssistant.status == "False":
 else:
     startup(theUser)
 
-mainMenu(theUser,theAssistant)
+# Main menu that launches after startup
+# Links to all other functions/menus/etc
+
+current = "What can I help you with?"
+doNotLetHimSpeak(current,True)
+
+options = """
+    0. Recordkeeping
+    1. Research & Information
+    2. Recommendations & Entertainment
+    3. Manage Personal Settings
+    4. Manage Assistant Settings
+    5. Reset Application
+
+    Exit with any other key.
+"""
+userinput = createMenu(options)
+
+if userinput == 0:
+    recordKeeping()
+elif userinput == 1:
+    research()
+elif userinput == 2:
+    entertainmentMenu()
+elif userinput == 3:
+    changePersonalMenu(theUser)
+elif userinput == 4:
+    changeAssistantMenu(theAssistant)
+elif userinput == 5:
+    resetPrompt(theUser)
+else:
+    doNotLetHimSpeak("Back to work then.",True)
