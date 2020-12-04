@@ -7,22 +7,21 @@
 
         - Features:
             [ ] Recordkeeping
-                    [ ] Scheduling
                     [x] Habits
                     [ ] Budgeting
                     [ ] Taste Tracker
-            [ ] Entertainment
-                    [ ] Games & Such
-                            [x] Rock, Paper, Scissors
-                            [ ] Upgraded Hangman(?)
-                    [ ] Recommendations
+                    [ ] Recommendations***
                             [ ] By Genre
                             [ ] By Mood
             [ ] Research
                     [ ] BUG-ish: What to do if page lookup fails
                     [ ] BUG: Why does browser not open sometimes
-            [ ] Games & Entertainment
-            [x] Assistant Remembering User if interacted before
+            [ ] Entertainment
+                    [ ] Games & Such
+                            [x] Rock, Paper, Scissors
+                            [ ] Small, RPG battle?
+                            [ ] Upgraded Hangman
+            [x] Assistant Memory
             [x] Settings JSON
             [x] Change Settings Functions
         - Cleanup / Streamlining
@@ -34,6 +33,8 @@
                     [x] Go through functions and update with it
             [x] createMenu: Function that takes options variable and uses it to create input?
                     [x] Adapt current functions/menus
+
+*** Most music APIs cost money; may have to cut.
 
 """
 
@@ -69,6 +70,8 @@
 #               - tasteTracker: Allows user to enter some values for daily interests
 #       - recommendations: (WIP)
 #       - research: Lets user look up stuff via wikipedia library
+#       - entertainmentMenu
+#               - wiiWouldLikeToPlay: Runs game for user to play
 #
 #       Settings //
 #
@@ -400,7 +403,7 @@ def changePersonalName(user):
     updateSettings(updateWhat,changedValue,newValue)
 
     # ask if user wants a nickname
-    current = newName+", it is. Would you like to have a nickname?"
+    current = newName+" it is. Would you like to have a nickname?"
     doNotLetHimSpeak(current,False)
     nickname = 0
     userinput = input(current + "[y/n]")
@@ -657,25 +660,43 @@ def research():
     # print first because this'll probably take a bit for talks
     topic = input (current)
     print(wikipedia.summary(topic, sentences=2))
-    current = "According to Wikipedia: "+wikipedia.summary(topic, sentences=2)
+    current = "\nAccording to Wikipedia: "+wikipedia.summary(topic, sentences=2)
     doNotLetHimSpeak(current,False)
 
-    current = "Does that answer your questions? Otherwise, here are some other options."
+    current = "\nDoes that answer your questions? Otherwise, here are some other options."
     doNotLetHimSpeak(current,True)
 
     options = ("""
         0. Open Page in Browser
-        1. Lookup Something Else
-        2. Finish Research
+        1. Save Page to Resources (WIP)
+        2. Lookup Something Else
     """)
     userinput = createMenu(options)
+    url = "https://en.wikipedia.org/wiki/"+topic
 
     if userinput == 0:
         # BUG x 2
         # Why won't you open bud!
-        url = "https://en.wikipedia.org/wiki/"+topic
         webbrowser.open(url, new=2)
     elif userinput == 1:
+        with open('userdata.json') as json_file:
+            data = json.load(json_file)
+
+            lastID = int(data['resources'][-1]['id'])
+            nextID = str(lastID + 1)
+            newResource= {
+                "id": ""+nextID+"",
+                "topic": ""+topic+"",
+                "url": ""+url+""
+                }
+            data['resources'].append(newResource)
+
+        with open('userdata.json', 'w') as json_file:
+            json_file.write(json.dumps(data,indent=4))
+        
+        current = "Topic saved to resources."
+        doNotLetHimSpeak(current,True)
+    elif userinput == 2:
         research()
 
 def wiiWouldLikeToPlay():
@@ -831,6 +852,40 @@ def startup(user):
     current = "It is currently " +str(temp) + " degrees in North Orlando."
     doNotLetHimSpeak(current,True)
 
+def mainMenu(user,assistant):
+    # Main menu that launches after startup
+    # Links to all other functions/menus/etc
+
+    current = "What can I help you with?"
+    doNotLetHimSpeak(current,True)
+
+    options = """
+        0. Recordkeeping
+        1. Research & Information
+        2. Recommendations & Entertainment
+        3. Manage Personal Settings
+        4. Manage Assistant Settings
+        5. Reset Application
+
+        Exit with any other key.
+    """
+    userinput = createMenu(options)
+
+    if userinput == 0:
+        recordKeeping()
+    elif userinput == 1:
+        research()
+    elif userinput == 2:
+        entertainmentMenu()
+    elif userinput == 3:
+        changePersonalMenu(user)
+    elif userinput == 4:
+        changeAssistantMenu(assistant)
+    elif userinput == 5:
+        resetPrompt(user)
+    else:
+        doNotLetHimSpeak("Back to work then.",True)
+
 #--------------------------------------------------------------------------
 
 # 3.0 BUILDING GUI
@@ -855,7 +910,7 @@ def startup(user):
 # 4.0 EXECUTION
 
 #--------------------------------------------------------------------------
-
+"""
 # Startup
 
 # Grab settings
@@ -872,35 +927,5 @@ if theAssistant.status == "False":
 else:
     startup(theUser)
 
-# Main menu that launches after startup
-# Links to all other functions/menus/etc
-
-current = "What can I help you with?"
-doNotLetHimSpeak(current,True)
-
-options = """
-    0. Recordkeeping
-    1. Research & Information
-    2. Recommendations & Entertainment
-    3. Manage Personal Settings
-    4. Manage Assistant Settings
-    5. Reset Application
-
-    Exit with any other key.
+mainMenu(theUser,theAssistant)
 """
-userinput = createMenu(options)
-
-if userinput == 0:
-    recordKeeping()
-elif userinput == 1:
-    research()
-elif userinput == 2:
-    entertainmentMenu()
-elif userinput == 3:
-    changePersonalMenu(theUser)
-elif userinput == 4:
-    changeAssistantMenu(theAssistant)
-elif userinput == 5:
-    resetPrompt(theUser)
-else:
-    doNotLetHimSpeak("Back to work then.",True)

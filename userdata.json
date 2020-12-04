@@ -26,6 +26,35 @@
                 "11_21_2020: 0",
                 "11_26_2020: 1"
             ]
+        },
+        {
+            "id": "3",
+            "topic": "dogs",
+            "url": "https://en.wikipedia.org/wiki/dogs"
         }
+    ],
+    "resources": [
+        {
+            "id": "0",
+            "topic": "frogs",
+            "description": "Hour of Coding",
+            "url": ""
+        },
+        {
+            "id": "1",
+            "topic": "dogs",
+            "url": "https://en.wikipedia.org/wiki/dogs"
+        },
+        {
+            "id": "2",
+            "topic": "yay",
+            "url": "yay"
+        },
+        {
+            "id": "3",
+            "topic": "yay",
+            "url": "yay"
+        },
+        "fish"
     ]
 }
