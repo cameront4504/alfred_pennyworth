@@ -668,7 +668,7 @@ def research():
 
     options = ("""
         0. Open Page in Browser
-        1. Save Page to Resources (WIP)
+        1. Save Page to Resources
         2. Lookup Something Else
     """)
     userinput = createMenu(options)
