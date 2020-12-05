@@ -2,42 +2,6 @@
 # Name: Personal Assistant App, Alfred
 # Time Spent: Rihanna-turning-hand.gif
 
-"""
-# TO DO LIST
-
-        - Features:
-            [ ] Recordkeeping
-                    [x] Habits
-                    [ ] Budgeting
-                    [ ] Taste Tracker
-                    [ ] Recommendations***
-                            [ ] By Genre
-                            [ ] By Mood
-            [ ] Research
-                    [ ] BUG-ish: What to do if page lookup fails
-                    [ ] BUG: Why does browser not open sometimes
-            [ ] Entertainment
-                    [ ] Games & Such
-                            [x] Rock, Paper, Scissors
-                            [ ] Small, RPG battle?
-                            [ ] Upgraded Hangman
-            [x] Assistant Memory
-            [x] Settings JSON
-            [x] Change Settings Functions
-        - Cleanup / Streamlining
-            [x] JSON reading and writing
-            [x] Create speech function
-                    [x] assistantSpeech(current):
-                            engine.say(current)
-                            engine.runAndWait()
-                    [x] Go through functions and update with it
-            [x] createMenu: Function that takes options variable and uses it to create input?
-                    [x] Adapt current functions/menus
-
-*** Most music APIs cost money; may have to cut.
-
-"""
-
 #--------------------------------------------------------------------------
 
 # Table of (Relative) Contents
@@ -62,14 +26,13 @@
 #       Main Functions //
 #
 #       - mainMenu: Main menu of sorts, grants access to app's primary functions
-#       - recordKeeping: Encompasses group of functions below (WIP)
+#       - recordKeeping: Encompasses group of functions below
 #               - dailyTracker: Bullet Journal -esque system
 #                    + dailyTrackerNewTracker: Lets user append new tracker to settings.json
 #                    + dailyTrackerAddEntry: Lets user add dated entry to an existing tracker
 #                    + dailyTrackerViewAll: Lets user select a tracker and view all entries for it
 #               - tasteTracker: Allows user to enter some values for daily interests
-#       - recommendations: (WIP)
-#       - research: Lets user look up stuff via wikipedia library
+#       - research: Lets user look up stuff via wikipedia library and add pages to resources
 #       - entertainmentMenu
 #               - wiiWouldLikeToPlay: Runs game for user to play
 #
@@ -89,10 +52,10 @@
 #
 #       - doNotLetHimSpeak: Function that accepts a dialogue value and uses it to have assist talk
 #         (cuts down on how many lines are written)
+#       - createMenu: accept parameter to populate a userinput prompt with variable-based options
 #
-# 3.0 BUILDING GUI (WIP)
 #
-# 4.0 EXECUTION
+# 3.0 EXECUTION
 
 #--------------------------------------------------------------------------
 
@@ -888,29 +851,10 @@ def mainMenu(user,assistant):
 
 #--------------------------------------------------------------------------
 
-# 3.0 BUILDING GUI
+# 3.0 EXECUTION
 
 #--------------------------------------------------------------------------
 
-# Honestly, this is probably going to get relegated to next semester or post-thesis
-
-#root = Tk()
-
-#def myClick():
-#	myLabel = Label(root, text="Look! I clicked a Button!!")
-#	myLabel.pack()
-
-#myButton = Button(root, text="Click Me!", command=myClick)
-#myButton.pack()
-
-#root.mainloop()
-
-#--------------------------------------------------------------------------
-
-# 4.0 EXECUTION
-
-#--------------------------------------------------------------------------
-"""
 # Startup
 
 # Grab settings
@@ -928,4 +872,3 @@ else:
     startup(theUser)
 
 mainMenu(theUser,theAssistant)
-"""
