@@ -595,26 +595,7 @@ def dailyTrackers():
         dailyTrackersViewAll()
     else:
         doNotLetHimSpeak("Back to work then.",True)
-
-# WIP ----------------------------------------------------------------------------------------------------------
-
-def tasteTracker():
-    # Inspired by those silly updates on deviantArt
-    # (CURRENTLY) What have you been up to:
-    #    Listening to, playing, watching, eating, quote of the day
-    print("Tastes")
-
-def birthdays():
-    # section to add birthdays or edit current entries
-
-    # update my birthday
-    # add a birthday for someone else
-    # edit an entry (need in case date wrong?)
-    # delete an entry oof ouchies
-    print("Birthdays")
-
-# WIP ----------------------------------------------------------------------------------------------------------
-
+        
 def research():
     current = "What would you like to research?"
     doNotLetHimSpeak(current,False)
