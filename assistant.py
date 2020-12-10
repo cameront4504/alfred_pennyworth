@@ -415,7 +415,7 @@ def recordKeeping():
         0. Budgeting (WIP)
         1. Scheduling (WIP)
         2. Daily Task Trackers
-        3. Taste Tracking
+        3. Taste Tracking (WIP)
     """
     userinput = createMenu(options)
 
@@ -426,7 +426,8 @@ def recordKeeping():
     elif userinput == 2:
         dailyTrackers()
     elif userinput == 3:
-        tasteTracker()
+        ##tasteTracker()
+        print("taste tracking")
     else:
         doNotLetHimSpeak("Back to work then.",True)
 
